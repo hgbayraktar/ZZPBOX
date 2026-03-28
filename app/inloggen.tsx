@@ -34,6 +34,7 @@ export default function InloggenScherm() {
       if (fout.code === 'auth/wrong-password') melding = 'Onjuist wachtwoord.';
       if (fout.code === 'auth/invalid-email') melding = 'Ongeldig e-mailadres.';
       if (fout.code === 'auth/too-many-requests') melding = 'Te veel pogingen. Probeer het later opnieuw.';
+      if (fout.code === 'auth/invalid-credential') melding = 'Onjuist e-mailadres of wachtwoord.';
       Alert.alert('Fout', melding);
     } finally {
       setLaden(false);

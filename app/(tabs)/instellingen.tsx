@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { signOut } from 'firebase/auth';
+import { sendPasswordResetEmail, signOut } from 'firebase/auth';
 import {
   Alert,
   ScrollView,
@@ -164,7 +164,7 @@ export default function InstellingenScherm() {
             ondertitel="Nieuw wachtwoord instellen"
             onPress={() => Alert.alert('Wachtwoord wijzigen', 'Er wordt een resetlink gestuurd naar uw e-mailadres.', [
               { text: 'Annuleren', style: 'cancel' },
-              { text: 'Versturen', onPress: () => {} }
+              { text: 'Versturen', onPress: async () => { try { await sendPasswordResetEmail(auth, gebruiker?.email || ''); Alert.alert('Verstuurd', 'Controleer uw inbox.'); } catch { Alert.alert('Fout', 'Kon e-mail niet versturen.'); } } }
             ])}
           />
         </View>

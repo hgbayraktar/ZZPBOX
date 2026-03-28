@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert, Modal,
@@ -29,6 +29,13 @@ export default function TransactiesScherm() {
   const [btw, setBtw] = useState('21%');
   const [categorie, setCategorie] = useState('');
   const [bezig, setBezig] = useState(false);
+
+  const { soort: soortParam } = useLocalSearchParams<{ soort?: string }>();
+
+  useEffect(() => {
+    if (soortParam === 'uitgave') nieuweTransactie('uitgave');
+    else if (soortParam === 'inkomst') nieuweTransactie('inkomst');
+  }, []);
 
   const vandaag = new Date().toISOString().split('T')[0];
   const dezeMaand = new Date().toISOString().slice(0, 7);
@@ -248,7 +255,7 @@ export default function TransactiesScherm() {
             <View style={stijlen.invoerGroep}>
               <View style={stijlen.labelRij}>
                 <Text style={stijlen.label}>Categorie</Text>
-                <TouchableOpacity onPress={() => { setModalZichtbaar(false); router.push('/(tabs)/categorieën'); }}>
+                <TouchableOpacity onPress={() => { setModalZichtbaar(false); router.push('/(tabs)/categorieen'); }}>
                   <Text style={stijlen.beheerTekst}>⚙️ Beheer categorieën</Text>
                 </TouchableOpacity>
               </View>
@@ -278,7 +285,7 @@ export default function TransactiesScherm() {
             {huidigeCategorieën.length === 0 ? (
               <View style={stijlen.legeKaart}>
                 <Text style={stijlen.leegeTekst}>Geen categorieën gevonden</Text>
-                <TouchableOpacity onPress={() => { setCategorieModalZichtbaar(false); setModalZichtbaar(false); router.push('/(tabs)/categorieën'); }}>
+                <TouchableOpacity onPress={() => { setCategorieModalZichtbaar(false); setModalZichtbaar(false); router.push('/(tabs)/categorieen'); }}>
                   <Text style={stijlen.beheerTekst}>⚙️ Categorieën beheren</Text>
                 </TouchableOpacity>
               </View>

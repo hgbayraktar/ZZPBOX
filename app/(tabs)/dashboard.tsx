@@ -121,7 +121,7 @@ export default function DashboardScherm() {
           </TouchableOpacity>
           <TouchableOpacity
             style={stijlen.actieKaart}
-            onPress={() => router.push('/(tabs)/inkomsten')}
+            onPress={() => router.push('/(tabs)/inkomsten?soort=uitgave')}
             activeOpacity={0.8}>
             <Text style={stijlen.actieIcoon}>🧾</Text>
             <Text style={stijlen.actieTekst}>Uitgave{'\n'}toevoegen</Text>
