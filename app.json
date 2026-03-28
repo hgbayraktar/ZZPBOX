@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "zzpbox",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "nl.zzpbox.app",

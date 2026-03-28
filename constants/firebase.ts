@@ -1,21 +1,28 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { initializeApp } from 'firebase/app';
-import { getReactNativePersistence, initializeAuth } from 'firebase/auth';
+import { getApp, getApps, initializeApp } from 'firebase/app';
+import { getAuth, getReactNativePersistence, initializeAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA4f969nNswvLsl0U0BC1rZYeIDOIIf1kA",
+  apiKey: "AIzaSyCnkJ89CRL9wX4dVx5I9_XxZ2Unu_OpKaA",
   authDomain: "zzpbox-b2d23.firebaseapp.com",
   projectId: "zzpbox-b2d23",
   storageBucket: "zzpbox-b2d23.firebasestorage.app",
   messagingSenderId: "438328082559",
-  appId: "1:438328082559:ios:8fe1a15eaacbe7945f7f4a"
+  appId: "1:438328082559:web:f7f948ab2b8043dd5f7f4a"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage)
-});
+let auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+} catch {
+  auth = getAuth(app);
+}
 
-export const db = getFirestore(app);
+const db = getFirestore(app);
+
+export { app, auth, db };
