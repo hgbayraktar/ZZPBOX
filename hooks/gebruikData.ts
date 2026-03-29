@@ -83,17 +83,7 @@ export function gebruikGebruiker() {
 }
 
 export function gebruikPakket() {
-  const { gebruiker } = gebruikGebruiker();
-  const [pakket, setPakket] = useState<'gratis' | 'premium'>('gratis');
-
-  useEffect(() => {
-    if (!gebruiker) return;
-    const afmelden = onSnapshot(doc(db, 'gebruikers', gebruiker.uid), (snap) => {
-      if (snap.exists()) setPakket(snap.data().pakket || 'gratis');
-    });
-    return afmelden;
-  }, [gebruiker]);
-
+  const { pakket } = useAuth();
   return pakket;
 }
 

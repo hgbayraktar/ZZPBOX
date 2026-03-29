@@ -259,7 +259,7 @@ export default function TransactiesScherm() {
                   <Text style={stijlen.beheerTekst}>⚙️ Beheer categorieën</Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity style={stijlen.categorieSelecteer} onPress={() => setCategorieModalZichtbaar(true)}>
+              <TouchableOpacity style={stijlen.categorieSelecteer} onPress={() => { setModalZichtbaar(false); setCategorieModalZichtbaar(true); }}>
                 <Text style={categorie ? stijlen.categorieGeselecteerd : stijlen.categoriePlaceholder}>
                   {categorie || 'Selecteer categorie...'}
                 </Text>
@@ -272,10 +272,10 @@ export default function TransactiesScherm() {
       </Modal>
 
       {/* CATEGORIE SELECTIE MODAL */}
-      <Modal visible={categorieModalZichtbaar} animationType="slide" presentationStyle="pageSheet">
+      <Modal visible={categorieModalZichtbaar} animationType="slide" presentationStyle="fullScreen">
         <View style={stijlen.modalScherm}>
           <View style={stijlen.modalKoptekst}>
-            <TouchableOpacity onPress={() => setCategorieModalZichtbaar(false)}>
+            <TouchableOpacity onPress={() => { setCategorieModalZichtbaar(false); setTimeout(() => setModalZichtbaar(true), 300); }}>
               <Text style={stijlen.annulerenTekst}>Annuleren</Text>
             </TouchableOpacity>
             <Text style={stijlen.modalTitel}>Categorie kiezen</Text>
@@ -294,7 +294,7 @@ export default function TransactiesScherm() {
                 <TouchableOpacity
                   key={cat}
                   style={[stijlen.categorieOptie, categorie === cat && stijlen.categorieOptieActief]}
-                  onPress={() => { setCategorie(cat); setCategorieModalZichtbaar(false); }}>
+                  onPress={() => { setCategorie(cat); setCategorieModalZichtbaar(false); setTimeout(() => setModalZichtbaar(true), 300); }}>
                   <Text style={[stijlen.categorieOptieTekst, categorie === cat && stijlen.categorieOptieTekstActief]}>
                     {cat}
                   </Text>
