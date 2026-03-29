@@ -1,7 +1,7 @@
-import { onAuthStateChanged } from 'firebase/auth';
 import { addDoc, collection, deleteDoc, doc, onSnapshot, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { auth, db } from '../constants/firebase';
+import { db } from '../constants/firebase';
+import { useAuth } from './AuthContext';
 
 const STANDAARD_CATEGORIEEN = [
   // INKOMSTEN
@@ -79,18 +79,7 @@ const STANDAARD_SUBCATEGORIEEN: Record<string, { naam: string; icoon: string }[]
 };
 
 export function gebruikGebruiker() {
-  const [gebruiker, setGebruiker] = useState<any>(null);
-  const [laden, setLaden] = useState(true);
-
-  useEffect(() => {
-    const afmelden = onAuthStateChanged(auth, (gebruikerData) => {
-      setGebruiker(gebruikerData);
-      setLaden(false);
-    });
-    return afmelden;
-  }, []);
-
-  return { gebruiker, laden };
+  return useAuth();
 }
 
 export function gebruikPakket() {
