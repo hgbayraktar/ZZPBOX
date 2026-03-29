@@ -4,7 +4,7 @@ import { getAuth, getReactNativePersistence, initializeAuth } from 'firebase/aut
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCnkJ89CRL9wX4dVx5I9_XxZ2Unu_OpKaA",
+  apiKey: "AIzaSyCnKJ89CRL9wX4dVx5I9_XxZ2Unu_OpKaA",
   authDomain: "zzpbox-b2d23.firebaseapp.com",
   projectId: "zzpbox-b2d23",
   storageBucket: "zzpbox-b2d23.firebasestorage.app",
