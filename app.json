@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "zzpbox",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "nl.zzpbox.app",
@@ -68,7 +68,11 @@
           }
         }
       ],
-      "expo-build-properties"
+      ["expo-build-properties", {
+        "ios": {
+          "deploymentTarget": "15.1"
+        }
+      }]
     ],
     "experiments": {
       "typedRoutes": true
