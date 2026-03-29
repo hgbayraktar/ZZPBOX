@@ -292,6 +292,7 @@ export default function FacturenScherm() {
     setKlantKvk(klant.kvkNummer || '');
     setKlantBtw(klant.btwNummer || '');
     setKlantModalZichtbaar(false);
+    setTimeout(() => setModalZichtbaar(true), 300);
   }
 
   function productSelecteren(product: any) {
@@ -302,6 +303,7 @@ export default function FacturenScherm() {
         : r
     ));
     setProductModalZichtbaar(false);
+    setTimeout(() => setModalZichtbaar(true), 300);
     setActieveRegelId(null);
   }
 
@@ -784,7 +786,7 @@ export default function FacturenScherm() {
               <View style={stijlen.sectieKoptekstRij}>
                 <Text style={stijlen.sectieKoptekst}>👥 Klantgegevens</Text>
                 {klanten.length > 0 && (
-                  <TouchableOpacity style={stijlen.selecteerKnop} onPress={() => setKlantModalZichtbaar(true)}>
+                  <TouchableOpacity style={stijlen.selecteerKnop} onPress={() => { setModalZichtbaar(false); setKlantModalZichtbaar(true); }}>
                     <Text style={stijlen.selecteerKnopTekst}>📋 Kies klant</Text>
                   </TouchableOpacity>
                 )}
@@ -823,7 +825,7 @@ export default function FacturenScherm() {
                       {producten.length > 0 && (
                         <TouchableOpacity
                           style={stijlen.productSelecteerKnop}
-                          onPress={() => { setActieveRegelId(regel.id); setProductModalZichtbaar(true); }}>
+                          onPress={() => { setActieveRegelId(regel.id); setModalZichtbaar(false); setProductModalZichtbaar(true); }}>
                           <Text style={stijlen.productSelecteerTekst}>📦 Kies product</Text>
                         </TouchableOpacity>
                       )}
@@ -919,7 +921,7 @@ export default function FacturenScherm() {
       <Modal visible={klantModalZichtbaar} animationType="slide" presentationStyle="fullScreen">
         <View style={stijlen.modalScherm}>
           <View style={stijlen.modalKoptekst}>
-            <TouchableOpacity onPress={() => setKlantModalZichtbaar(false)}>
+            <TouchableOpacity onPress={() => { setKlantModalZichtbaar(false); setTimeout(() => setModalZichtbaar(true), 300); }}>
               <Text style={stijlen.annulerenTekst}>Annuleren</Text>
             </TouchableOpacity>
             <Text style={stijlen.modalTitel}>Klant selecteren</Text>
@@ -947,7 +949,7 @@ export default function FacturenScherm() {
       <Modal visible={productModalZichtbaar} animationType="slide" presentationStyle="fullScreen">
         <View style={stijlen.modalScherm}>
           <View style={stijlen.modalKoptekst}>
-            <TouchableOpacity onPress={() => { setProductModalZichtbaar(false); setActieveRegelId(null); }}>
+            <TouchableOpacity onPress={() => { setProductModalZichtbaar(false); setActieveRegelId(null); setTimeout(() => setModalZichtbaar(true), 300); }}>
               <Text style={stijlen.annulerenTekst}>Annuleren</Text>
             </TouchableOpacity>
             <Text style={stijlen.modalTitel}>Product selecteren</Text>
