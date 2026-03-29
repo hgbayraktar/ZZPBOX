@@ -916,7 +916,7 @@ export default function FacturenScherm() {
       </Modal>
 
       {/* KLANT SELECTIE MODAL */}
-      <Modal visible={klantModalZichtbaar} animationType="slide" presentationStyle="pageSheet">
+      <Modal visible={klantModalZichtbaar} animationType="slide" presentationStyle="fullScreen">
         <View style={stijlen.modalScherm}>
           <View style={stijlen.modalKoptekst}>
             <TouchableOpacity onPress={() => setKlantModalZichtbaar(false)}>
@@ -944,7 +944,7 @@ export default function FacturenScherm() {
       </Modal>
 
       {/* PRODUCT SELECTIE MODAL */}
-      <Modal visible={productModalZichtbaar} animationType="slide" presentationStyle="pageSheet">
+      <Modal visible={productModalZichtbaar} animationType="slide" presentationStyle="fullScreen">
         <View style={stijlen.modalScherm}>
           <View style={stijlen.modalKoptekst}>
             <TouchableOpacity onPress={() => { setProductModalZichtbaar(false); setActieveRegelId(null); }}>
