@@ -43,8 +43,8 @@ export default function InstellingenScherm() {
       const bestandspad = FileSystem.documentDirectory + 'zzpbox_export.csv';
       await FileSystem.writeAsStringAsync(bestandspad, csvInhoud, { encoding: FileSystem.EncodingType.UTF8 });
       await Sharing.shareAsync(bestandspad, { mimeType: 'text/csv', dialogTitle: 'Exporteer transacties' });
-    } catch (e) {
-      Alert.alert('Fout', 'Kon gegevens niet exporteren.');
+    } catch (e: any) {
+      Alert.alert('Fout', e?.message || 'Kon gegevens niet exporteren.');
     }
   }
 
