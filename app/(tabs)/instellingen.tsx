@@ -21,6 +21,13 @@ export default function InstellingenScherm() {
   const { transacties } = gebruikTransacties();
 
   async function csvExporteren() {
+    if (pakket !== 'premium') {
+      Alert.alert('Premium functie', 'Gegevens exporteren is alleen beschikbaar in Premium.', [
+        { text: 'Annuleren', style: 'cancel' },
+        { text: 'Upgraden', onPress: () => router.push('/(tabs)/abonnement') }
+      ]);
+      return;
+    }
     if (transacties.length === 0) {
       Alert.alert('Geen gegevens', 'Er zijn nog geen transacties om te exporteren.');
       return;
@@ -42,6 +49,13 @@ export default function InstellingenScherm() {
   }
 
   async function meldingInplannen() {
+    if (pakket !== 'premium') {
+      Alert.alert('Premium functie', 'Herinneringen zijn alleen beschikbaar in Premium.', [
+        { text: 'Annuleren', style: 'cancel' },
+        { text: 'Upgraden', onPress: () => router.push('/(tabs)/abonnement') }
+      ]);
+      return;
+    }
     const { status } = await Notifications.requestPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Toestemming vereist', 'Sta meldingen toe in uw telefooninstellingen om herinneringen te ontvangen.');
@@ -226,6 +240,7 @@ export default function InstellingenScherm() {
             titel="Herinneringen"
             ondertitel="BTW-aangifte en betaalherinneringen"
             onPress={meldingInplannen}
+            badge={pakket !== 'premium' ? 'PREMIUM' : undefined}
           />
         </View>
 
@@ -237,6 +252,7 @@ export default function InstellingenScherm() {
             titel="Gegevens exporteren"
             ondertitel="Alle transacties exporteren als CSV"
             onPress={csvExporteren}
+            badge={pakket !== 'premium' ? 'PREMIUM' : undefined}
           />
           <View style={stijlen.scheidingslijn} />
           <MenuItem
