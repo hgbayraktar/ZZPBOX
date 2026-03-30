@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import { documentDirectory, writeAsStringAsync } from 'expo-file-system';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
@@ -40,8 +40,8 @@ export default function InstellingenScherm() {
         return `${t.datum || ''};${(t.omschrijving || '').replace(/;/g, ',')};${t.categorie || ''};${t.soort || ''};${bedrag};${btw}`;
       }).join('\n');
       const csvInhoud = koptekst + rijen;
-      const bestandspad = FileSystem.documentDirectory + 'zzpbox_export.csv';
-      await FileSystem.writeAsStringAsync(bestandspad, csvInhoud, { encoding: FileSystem.EncodingType.UTF8 });
+      const bestandspad = documentDirectory + 'zzpbox_export.csv';
+      await writeAsStringAsync(bestandspad!, csvInhoud);
       await Sharing.shareAsync(bestandspad, { mimeType: 'text/csv', dialogTitle: 'Exporteer transacties' });
     } catch (e: any) {
       Alert.alert('Fout', e?.message || 'Kon gegevens niet exporteren.');
