@@ -1,4 +1,3 @@
-import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { sendPasswordResetEmail, signOut } from 'firebase/auth';
 import {
@@ -25,27 +24,29 @@ export default function InstellingenScherm() {
       ]);
       return;
     }
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Toestemming vereist', 'Sta meldingen toe in uw telefooninstellingen om herinneringen te ontvangen.');
-      return;
-    }
-    await Notifications.cancelAllScheduledNotificationsAsync();
-
-    // BTW-aangifte herinnering: elk kwartaal op de 25e van de maand na het kwartaal
-    const nu = new Date();
-    const kwartaalMaanden = [3, 6, 9, 12];
-    for (const maand of kwartaalMaanden) {
-      const datum = new Date(nu.getFullYear(), maand - 1, 25, 9, 0, 0);
-      if (datum > nu) {
-        await Notifications.scheduleNotificationAsync({
-          content: { title: '📊 BTW-aangifte herinnering', body: 'Vergeet niet uw BTW-aangifte in te dienen via de Belastingdienst.' },
-          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: datum },
-        });
+    try {
+      const Notifications = require('expo-notifications');
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Toestemming vereist', 'Sta meldingen toe in uw telefooninstellingen om herinneringen te ontvangen.');
+        return;
       }
+      await Notifications.cancelAllScheduledNotificationsAsync();
+      const nu = new Date();
+      const kwartaalMaanden = [3, 6, 9, 12];
+      for (const maand of kwartaalMaanden) {
+        const datum = new Date(nu.getFullYear(), maand - 1, 25, 9, 0, 0);
+        if (datum > nu) {
+          await Notifications.scheduleNotificationAsync({
+            content: { title: '📊 BTW-aangifte herinnering', body: 'Vergeet niet uw BTW-aangifte in te dienen via de Belastingdienst.' },
+            trigger: { type: 'date', date: datum },
+          });
+        }
+      }
+      Alert.alert('Herinneringen ingesteld', 'U ontvangt elk kwartaal een herinnering voor uw BTW-aangifte op de 25e.');
+    } catch {
+      Alert.alert('Fout', 'Kon herinneringen niet instellen.');
     }
-
-    Alert.alert('Herinneringen ingesteld', 'U ontvangt elk kwartaal een herinnering voor uw BTW-aangifte op de 25e.');
   }
 
   async function uitloggen() {
