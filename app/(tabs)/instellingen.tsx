@@ -1,7 +1,5 @@
-import { documentDirectory, writeAsStringAsync } from 'expo-file-system';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
-import * as Sharing from 'expo-sharing';
 import { sendPasswordResetEmail, signOut } from 'firebase/auth';
 import {
   Alert,
@@ -12,41 +10,12 @@ import {
   View
 } from 'react-native';
 import { auth } from '../../constants/firebase';
-import { gebruikGebruiker, gebruikPakket, gebruikTransacties } from '../../hooks/gebruikData';
+import { gebruikGebruiker, gebruikPakket } from '../../hooks/gebruikData';
 
 export default function InstellingenScherm() {
   const router = useRouter();
   const { gebruiker } = gebruikGebruiker();
   const pakket = gebruikPakket();
-  const { transacties } = gebruikTransacties();
-
-  async function csvExporteren() {
-    if (pakket !== 'premium') {
-      Alert.alert('Premium functie', 'Gegevens exporteren is alleen beschikbaar in Premium.', [
-        { text: 'Annuleren', style: 'cancel' },
-        { text: 'Upgraden', onPress: () => router.push('/(tabs)/abonnement') }
-      ]);
-      return;
-    }
-    if (transacties.length === 0) {
-      Alert.alert('Geen gegevens', 'Er zijn nog geen transacties om te exporteren.');
-      return;
-    }
-    try {
-      const koptekst = 'Datum;Omschrijving;Categorie;Soort;Bedrag;BTW\n';
-      const rijen = transacties.map(t => {
-        const bedrag = typeof t.bedrag === 'number' ? t.bedrag.toFixed(2).replace('.', ',') : '0,00';
-        const btw = typeof t.btw === 'number' ? t.btw.toFixed(2).replace('.', ',') : '0,00';
-        return `${t.datum || ''};${(t.omschrijving || '').replace(/;/g, ',')};${t.categorie || ''};${t.soort || ''};${bedrag};${btw}`;
-      }).join('\n');
-      const csvInhoud = koptekst + rijen;
-      const bestandspad = documentDirectory + 'zzpbox_export.csv';
-      await writeAsStringAsync(bestandspad!, csvInhoud);
-      await Sharing.shareAsync(bestandspad, { mimeType: 'text/csv', dialogTitle: 'Exporteer transacties' });
-    } catch (e: any) {
-      Alert.alert('Fout', e?.message || 'Kon gegevens niet exporteren.');
-    }
-  }
 
   async function meldingInplannen() {
     if (pakket !== 'premium') {
@@ -247,14 +216,6 @@ export default function InstellingenScherm() {
         {/* GEGEVENS */}
         <Text style={stijlen.sectieLabel}>GEGEVENS</Text>
         <View style={stijlen.sectieKaart}>
-          <MenuItem
-            icoon="📤"
-            titel="Gegevens exporteren"
-            ondertitel="Alle transacties exporteren als CSV"
-            onPress={csvExporteren}
-            badge={pakket !== 'premium' ? 'PREMIUM' : undefined}
-          />
-          <View style={stijlen.scheidingslijn} />
           <MenuItem
             icoon="🗑️"
             titel="Account verwijderen"
