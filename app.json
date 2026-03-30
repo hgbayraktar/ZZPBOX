@@ -13,6 +13,9 @@
       "bundleIdentifier": "nl.zzpbox.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "aps-environment": "production"
       }
     },
     "android": {
