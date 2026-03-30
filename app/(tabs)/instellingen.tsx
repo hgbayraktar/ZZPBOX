@@ -1,4 +1,7 @@
+import * as FileSystem from 'expo-file-system';
+import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
+import * as Sharing from 'expo-sharing';
 import { sendPasswordResetEmail, signOut } from 'firebase/auth';
 import {
   Alert,
@@ -9,12 +12,58 @@ import {
   View
 } from 'react-native';
 import { auth } from '../../constants/firebase';
-import { gebruikGebruiker, gebruikPakket } from '../../hooks/gebruikData';
+import { gebruikGebruiker, gebruikPakket, gebruikTransacties } from '../../hooks/gebruikData';
 
 export default function InstellingenScherm() {
   const router = useRouter();
   const { gebruiker } = gebruikGebruiker();
   const pakket = gebruikPakket();
+  const { transacties } = gebruikTransacties();
+
+  async function csvExporteren() {
+    if (transacties.length === 0) {
+      Alert.alert('Geen gegevens', 'Er zijn nog geen transacties om te exporteren.');
+      return;
+    }
+    try {
+      const koptekst = 'Datum;Omschrijving;Categorie;Soort;Bedrag;BTW\n';
+      const rijen = transacties.map(t => {
+        const bedrag = typeof t.bedrag === 'number' ? t.bedrag.toFixed(2).replace('.', ',') : '0,00';
+        const btw = typeof t.btw === 'number' ? t.btw.toFixed(2).replace('.', ',') : '0,00';
+        return `${t.datum || ''};${(t.omschrijving || '').replace(/;/g, ',')};${t.categorie || ''};${t.soort || ''};${bedrag};${btw}`;
+      }).join('\n');
+      const csvInhoud = koptekst + rijen;
+      const bestandspad = FileSystem.documentDirectory + 'zzpbox_export.csv';
+      await FileSystem.writeAsStringAsync(bestandspad, csvInhoud, { encoding: FileSystem.EncodingType.UTF8 });
+      await Sharing.shareAsync(bestandspad, { mimeType: 'text/csv', dialogTitle: 'Exporteer transacties' });
+    } catch (e) {
+      Alert.alert('Fout', 'Kon gegevens niet exporteren.');
+    }
+  }
+
+  async function meldingInplannen() {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Toestemming vereist', 'Sta meldingen toe in uw telefooninstellingen om herinneringen te ontvangen.');
+      return;
+    }
+    await Notifications.cancelAllScheduledNotificationsAsync();
+
+    // BTW-aangifte herinnering: elk kwartaal op de 25e van de maand na het kwartaal
+    const nu = new Date();
+    const kwartaalMaanden = [3, 6, 9, 12];
+    for (const maand of kwartaalMaanden) {
+      const datum = new Date(nu.getFullYear(), maand - 1, 25, 9, 0, 0);
+      if (datum > nu) {
+        await Notifications.scheduleNotificationAsync({
+          content: { title: '📊 BTW-aangifte herinnering', body: 'Vergeet niet uw BTW-aangifte in te dienen via de Belastingdienst.' },
+          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: datum },
+        });
+      }
+    }
+
+    Alert.alert('Herinneringen ingesteld', 'U ontvangt elk kwartaal een herinnering voor uw BTW-aangifte op de 25e.');
+  }
 
   async function uitloggen() {
     Alert.alert('Uitloggen', 'Weet u zeker dat u wilt uitloggen?', [
@@ -176,8 +225,7 @@ export default function InstellingenScherm() {
             icoon="🔔"
             titel="Herinneringen"
             ondertitel="BTW-aangifte en betaalherinneringen"
-            onPress={() => Alert.alert('Binnenkort', 'Meldingsinstellingen worden binnenkort toegevoegd.')}
-            badge="BINNENKORT"
+            onPress={meldingInplannen}
           />
         </View>
 
@@ -188,8 +236,7 @@ export default function InstellingenScherm() {
             icoon="📤"
             titel="Gegevens exporteren"
             ondertitel="Alle transacties exporteren als CSV"
-            onPress={() => Alert.alert('Binnenkort', 'Export functie wordt binnenkort toegevoegd.')}
-            badge="BINNENKORT"
+            onPress={csvExporteren}
           />
           <View style={stijlen.scheidingslijn} />
           <MenuItem

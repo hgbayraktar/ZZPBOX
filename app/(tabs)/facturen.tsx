@@ -607,7 +607,11 @@ export default function FacturenScherm() {
               )}
             </View>
           ) : (
-            alleFacturen.map(factuur => (
+            <>
+            <View style={stijlen.creditnotaTip}>
+              <Text style={stijlen.creditnotaTipTekst}>💡 Tip: Tik op een factuur om een creditnota aan te maken</Text>
+            </View>
+            {alleFacturen.map(factuur => (
               <TouchableOpacity
                 key={factuur.id}
                 style={[stijlen.factuurKaart, factuur.soort === 'creditnota' && stijlen.creditKaart]}
@@ -644,7 +648,8 @@ export default function FacturenScherm() {
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
-            ))
+            ))}
+            </>
           )
 
         ) : (
@@ -1191,6 +1196,8 @@ const stijlen = StyleSheet.create({
   leegeOndertekst: { color: '#444', fontSize: 13, textAlign: 'center', paddingHorizontal: 40 },
   upgradeKnop: { backgroundColor: '#FF6B00', paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10, marginTop: 4 },
   upgradeKnopTekst: { color: '#1A1A1A', fontSize: 13, fontWeight: '800' },
+  creditnotaTip: { backgroundColor: '#1a1a0a', borderRadius: 10, padding: 10, marginBottom: 12, borderWidth: 1, borderColor: '#C9A84C33' },
+  creditnotaTipTekst: { color: '#C9A84C', fontSize: 12, textAlign: 'center' },
   factuurKaart: { backgroundColor: '#242424', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#2a2a2a' },
   creditKaart: { borderColor: '#f4433633' },
   factuurKoptekst: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
