@@ -1,9 +1,11 @@
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
-import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import { OAuthProvider, sendPasswordResetEmail, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   StatusBar,
   StyleSheet, Text,
   TextInput,
@@ -38,6 +40,28 @@ export default function InloggenScherm() {
       Alert.alert('Fout', melding);
     } finally {
       setLaden(false);
+    }
+  }
+
+  async function appleInloggen() {
+    try {
+      const appleCredential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      const provider = new OAuthProvider('apple.com');
+      const credential = provider.credential({
+        idToken: appleCredential.identityToken!,
+        rawNonce: appleCredential.authorizationCode!,
+      });
+      await signInWithCredential(auth, credential);
+      router.replace('/(tabs)/dashboard');
+    } catch (fout: any) {
+      if (fout.code !== 'ERR_REQUEST_CANCELED') {
+        Alert.alert('Fout', 'Inloggen met Apple mislukt.');
+      }
     }
   }
 
@@ -113,6 +137,23 @@ export default function InloggenScherm() {
           )}
         </TouchableOpacity>
 
+        {Platform.OS === 'ios' && (
+          <>
+            <View style={stijlen.scheidingslijn}>
+              <View style={stijlen.scheidingslijnLijn} />
+              <Text style={stijlen.scheidingslijnTekst}>of</Text>
+              <View style={stijlen.scheidingslijnLijn} />
+            </View>
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+              cornerRadius={14}
+              style={stijlen.appleKnop}
+              onPress={appleInloggen}
+            />
+          </>
+        )}
+
         <TouchableOpacity onPress={() => router.push('/registreren')} style={stijlen.registrerenLink}>
           <Text style={stijlen.registrerenTekst}>
             Nog geen account? <Text style={stijlen.link}>Registreren</Text>
@@ -144,4 +185,8 @@ const stijlen = StyleSheet.create({
   registrerenLink: { alignItems: 'center' },
   registrerenTekst: { color: '#666', fontSize: 14 },
   link: { color: '#C9A84C', fontWeight: '600' },
+  scheidingslijn: { flexDirection: 'row', alignItems: 'center', marginVertical: 16 },
+  scheidingslijnLijn: { flex: 1, height: 1, backgroundColor: '#333' },
+  scheidingslijnTekst: { color: '#555', fontSize: 13, marginHorizontal: 12 },
+  appleKnop: { height: 52, marginBottom: 16 },
 });
