@@ -1,6 +1,7 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
-import { OAuthProvider, sendPasswordResetEmail, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
+import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
+import { GoogleAuthProvider, OAuthProvider, sendPasswordResetEmail, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,6 +14,10 @@ import {
   View
 } from 'react-native';
 import { auth } from '../constants/firebase';
+
+GoogleSignin.configure({
+  webClientId: '438328082559-t5jn255vt744pbko752mg8sp8sdhbg21.apps.googleusercontent.com',
+});
 
 export default function InloggenScherm() {
   const router = useRouter();
@@ -66,6 +71,22 @@ export default function InloggenScherm() {
     } catch (fout: any) {
       if (fout.code !== 'ERR_REQUEST_CANCELED') {
         Alert.alert('Fout', 'Inloggen met Apple mislukt.');
+      }
+    }
+  }
+
+  async function googleInloggen() {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken;
+      if (!idToken) throw new Error('Geen ID token');
+      const credential = GoogleAuthProvider.credential(idToken);
+      await signInWithCredential(auth, credential);
+      router.replace('/(tabs)/dashboard');
+    } catch (fout: any) {
+      if (fout.code !== statusCodes.SIGN_IN_CANCELLED) {
+        Alert.alert('Fout', 'Inloggen met Google mislukt.');
       }
     }
   }
@@ -142,21 +163,29 @@ export default function InloggenScherm() {
           )}
         </TouchableOpacity>
 
+        <View style={stijlen.scheidingslijn}>
+          <View style={stijlen.scheidingslijnLijn} />
+          <Text style={stijlen.scheidingslijnTekst}>of</Text>
+          <View style={stijlen.scheidingslijnLijn} />
+        </View>
+
         {applebeschikbaar && (
-          <>
-            <View style={stijlen.scheidingslijn}>
-              <View style={stijlen.scheidingslijnLijn} />
-              <Text style={stijlen.scheidingslijnTekst}>of</Text>
-              <View style={stijlen.scheidingslijnLijn} />
-            </View>
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-              cornerRadius={14}
-              style={stijlen.appleKnop}
-              onPress={appleInloggen}
-            />
-          </>
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+            cornerRadius={14}
+            style={stijlen.appleKnop}
+            onPress={appleInloggen}
+          />
+        )}
+
+        {Platform.OS === 'android' && (
+          <GoogleSigninButton
+            style={stijlen.googleKnop}
+            size={GoogleSigninButton.Size.Wide}
+            color={GoogleSigninButton.Color.Dark}
+            onPress={googleInloggen}
+          />
         )}
 
         <TouchableOpacity onPress={() => router.push('/registreren')} style={stijlen.registrerenLink}>
@@ -194,4 +223,5 @@ const stijlen = StyleSheet.create({
   scheidingslijnLijn: { flex: 1, height: 1, backgroundColor: '#333' },
   scheidingslijnTekst: { color: '#555', fontSize: 13, marginHorizontal: 12 },
   appleKnop: { height: 52, marginBottom: 16 },
+  googleKnop: { width: '100%', height: 52, marginBottom: 16 },
 });

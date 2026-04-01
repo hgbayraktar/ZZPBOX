@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
-import { OAuthProvider, createUserWithEmailAndPassword, signInWithCredential, updateProfile } from 'firebase/auth';
+import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
+import { GoogleAuthProvider, OAuthProvider, createUserWithEmailAndPassword, signInWithCredential, updateProfile } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
@@ -105,6 +106,33 @@ export default function RegistrerenScherm() {
       Alert.alert('Fout', melding);
     } finally {
       setLaden(false);
+    }
+  }
+
+  async function googleRegistreren() {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken;
+      if (!idToken) throw new Error('Geen ID token');
+      const credential = GoogleAuthProvider.credential(idToken);
+      const resultaat = await signInWithCredential(auth, credential);
+      const gebruikerDoc = await getDoc(doc(db, 'gebruikers', resultaat.user.uid));
+      if (!gebruikerDoc.exists()) {
+        const nu = new Date();
+        await setDoc(doc(db, 'gebruikers', resultaat.user.uid), {
+          voornaam: resultaat.user.displayName?.split(' ')[0] || '',
+          achternaam: resultaat.user.displayName?.split(' ').slice(1).join(' ') || '',
+          email: resultaat.user.email || '',
+          pakket: 'gratis',
+          aangemaakt: nu.toISOString(),
+        });
+      }
+      router.replace('/(tabs)/dashboard');
+    } catch (fout: any) {
+      if (fout.code !== statusCodes.SIGN_IN_CANCELLED) {
+        Alert.alert('Fout', 'Registreren met Google mislukt.');
+      }
     }
   }
 
@@ -279,21 +307,29 @@ export default function RegistrerenScherm() {
           )}
         </TouchableOpacity>
 
+        <View style={stijlen.scheidingslijn}>
+          <View style={stijlen.scheidingslijnLijn} />
+          <Text style={stijlen.scheidingslijnTekst}>of</Text>
+          <View style={stijlen.scheidingslijnLijn} />
+        </View>
+
         {applebeschikbaar && (
-          <>
-            <View style={stijlen.scheidingslijn}>
-              <View style={stijlen.scheidingslijnLijn} />
-              <Text style={stijlen.scheidingslijnTekst}>of</Text>
-              <View style={stijlen.scheidingslijnLijn} />
-            </View>
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-              cornerRadius={14}
-              style={stijlen.appleKnop}
-              onPress={appleRegistreren}
-            />
-          </>
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+            cornerRadius={14}
+            style={stijlen.appleKnop}
+            onPress={appleRegistreren}
+          />
+        )}
+
+        {Platform.OS === 'android' && (
+          <GoogleSigninButton
+            style={stijlen.googleKnop}
+            size={GoogleSigninButton.Size.Wide}
+            color={GoogleSigninButton.Color.Dark}
+            onPress={googleRegistreren}
+          />
         )}
 
         <TouchableOpacity onPress={() => router.push('/inloggen')} style={stijlen.inloggenLink}>
@@ -343,4 +379,5 @@ const stijlen = StyleSheet.create({
   scheidingslijnLijn: { flex: 1, height: 1, backgroundColor: '#333' },
   scheidingslijnTekst: { color: '#555', fontSize: 13, marginHorizontal: 12 },
   appleKnop: { height: 52, marginBottom: 16 },
+  googleKnop: { width: '100%', height: 52, marginBottom: 16 },
 });
