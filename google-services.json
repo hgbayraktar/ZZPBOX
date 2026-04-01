@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "438328082559",
+    "project_id": "zzpbox-b2d23",
+    "storage_bucket": "zzpbox-b2d23.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:438328082559:android:20fcc658ef52f08b5f7f4a",
+        "android_client_info": {
+          "package_name": "nl.zzpbox.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "438328082559-sk22e5agm22bjua0rb4r9fdjv5t79mcg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nl.zzpbox.app",
+            "certificate_hash": "768f9e5bcdfe24db2086db737b1fbebc296b22ad"
+          }
+        },
+        {
+          "client_id": "438328082559-t5jn255vt744pbko752mg8sp8sdhbg21.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFtvKlWB9A4fmN2kJ_qifCNjdK9iLoSdk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "438328082559-t5jn255vt744pbko752mg8sp8sdhbg21.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "438328082559-advu798dfsfsdhksahmmrqo9j101elaf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "nl.zzpbox.app",
+                "app_store_id": "1"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
