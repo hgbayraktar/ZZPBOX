@@ -1,7 +1,7 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
 import { OAuthProvider, sendPasswordResetEmail, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -20,6 +20,11 @@ export default function InloggenScherm() {
   const [wachtwoord, setWachtwoord] = useState('');
   const [toonWachtwoord, setToonWachtwoord] = useState(false);
   const [laden, setLaden] = useState(false);
+  const [applebeschikbaar, setAppleBeschikbaar] = useState(false);
+
+  useEffect(() => {
+    AppleAuthentication.isAvailableAsync().then(setAppleBeschikbaar).catch(() => setAppleBeschikbaar(false));
+  }, []);
 
   async function inloggen() {
     if (!email || !wachtwoord) {
@@ -137,7 +142,7 @@ export default function InloggenScherm() {
           )}
         </TouchableOpacity>
 
-        {Platform.OS === 'ios' && (
+        {applebeschikbaar && (
           <>
             <View style={stijlen.scheidingslijn}>
               <View style={stijlen.scheidingslijnLijn} />

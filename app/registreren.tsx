@@ -1,11 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { useState } from 'react';
+import { OAuthProvider, createUserWithEmailAndPassword, signInWithCredential, updateProfile } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet, Text,
@@ -25,6 +27,11 @@ export default function RegistrerenScherm() {
   const [toonWachtwoord, setToonWachtwoord] = useState(false);
   const [akkoord, setAkkoord] = useState(false);
   const [laden, setLaden] = useState(false);
+  const [applebeschikbaar, setAppleBeschikbaar] = useState(false);
+
+  useEffect(() => {
+    AppleAuthentication.isAvailableAsync().then(setAppleBeschikbaar).catch(() => setAppleBeschikbaar(false));
+  }, []);
 
   function wachtwoordSterkte(): { score: number; label: string; kleur: string } {
     let score = 0;
@@ -101,6 +108,39 @@ export default function RegistrerenScherm() {
     }
   }
 
+  async function appleRegistreren() {
+    try {
+      const appleCredential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      const provider = new OAuthProvider('apple.com');
+      const credential = provider.credential({
+        idToken: appleCredential.identityToken!,
+        rawNonce: appleCredential.authorizationCode!,
+      });
+      const resultaat = await signInWithCredential(auth, credential);
+      const gebruikerDoc = await getDoc(doc(db, 'gebruikers', resultaat.user.uid));
+      if (!gebruikerDoc.exists()) {
+        const nu = new Date();
+        await setDoc(doc(db, 'gebruikers', resultaat.user.uid), {
+          voornaam: appleCredential.fullName?.givenName || '',
+          achternaam: appleCredential.fullName?.familyName || '',
+          email: resultaat.user.email || '',
+          pakket: 'gratis',
+          aangemaakt: nu.toISOString(),
+        });
+      }
+      router.replace('/(tabs)/dashboard');
+    } catch (fout: any) {
+      if (fout.code !== 'ERR_REQUEST_CANCELED') {
+        Alert.alert('Fout', 'Registreren met Apple mislukt.');
+      }
+    }
+  }
+
   return (
     <View style={stijlen.scherm}>
       <StatusBar barStyle="light-content" backgroundColor="#1A1A1A" />
@@ -111,7 +151,7 @@ export default function RegistrerenScherm() {
         </TouchableOpacity>
 
         <Text style={stijlen.titel}>Account aanmaken</Text>
-        <Text style={stijlen.ondertitel}>30 dagen gratis proberen</Text>
+        <Text style={stijlen.ondertitel}>Gratis account aanmaken</Text>
 
         <View style={stijlen.rij}>
           <View style={[stijlen.invoerGroep, { flex: 1 }]}>
@@ -239,6 +279,23 @@ export default function RegistrerenScherm() {
           )}
         </TouchableOpacity>
 
+        {applebeschikbaar && (
+          <>
+            <View style={stijlen.scheidingslijn}>
+              <View style={stijlen.scheidingslijnLijn} />
+              <Text style={stijlen.scheidingslijnTekst}>of</Text>
+              <View style={stijlen.scheidingslijnLijn} />
+            </View>
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+              cornerRadius={14}
+              style={stijlen.appleKnop}
+              onPress={appleRegistreren}
+            />
+          </>
+        )}
+
         <TouchableOpacity onPress={() => router.push('/inloggen')} style={stijlen.inloggenLink}>
           <Text style={stijlen.inloggenTekst}>Al een account? <Text style={stijlen.link}>Inloggen</Text></Text>
         </TouchableOpacity>
@@ -282,4 +339,8 @@ const stijlen = StyleSheet.create({
   registrerenTekst: { color: '#1A1A1A', fontSize: 16, fontWeight: '900' },
   inloggenLink: { alignItems: 'center' },
   inloggenTekst: { color: '#666', fontSize: 14 },
+  scheidingslijn: { flexDirection: 'row', alignItems: 'center', marginVertical: 16 },
+  scheidingslijnLijn: { flex: 1, height: 1, backgroundColor: '#333' },
+  scheidingslijnTekst: { color: '#555', fontSize: 13, marginHorizontal: 12 },
+  appleKnop: { height: 52, marginBottom: 16 },
 });

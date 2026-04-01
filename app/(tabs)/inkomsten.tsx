@@ -1,4 +1,6 @@
+import * as Print from 'expo-print';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -16,7 +18,7 @@ const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
 
 export default function TransactiesScherm() {
   const router = useRouter();
-  const { gebruiker } = gebruikGebruiker();
+  gebruikGebruiker();
   const pakket = gebruikPakket();
   const { transacties, laden, toevoegen, verwijderen } = gebruikTransacties();
   const { alleNamen } = gebruikCategorieën();
@@ -29,6 +31,10 @@ export default function TransactiesScherm() {
   const [btw, setBtw] = useState('21%');
   const [categorie, setCategorie] = useState('');
   const [bezig, setBezig] = useState(false);
+  const [exportModalZichtbaar, setExportModalZichtbaar] = useState(false);
+  const [exportBezig, setExportBezig] = useState(false);
+  const [vanDatum, setVanDatum] = useState('');
+  const [totDatum, setTotDatum] = useState('');
 
   const { soort: soortParam } = useLocalSearchParams<{ soort?: string }>();
 
@@ -112,6 +118,105 @@ export default function TransactiesScherm() {
     }
   }
 
+  function snelPeriode(type: 'deze-maand' | 'vorige-maand' | 'kwartaal' | 'jaar') {
+    const nu = new Date();
+    const j = nu.getFullYear();
+    const m = nu.getMonth();
+    if (type === 'deze-maand') {
+      setVanDatum(`${j}-${String(m + 1).padStart(2, '0')}-01`);
+      setTotDatum(`${j}-${String(m + 1).padStart(2, '0')}-${new Date(j, m + 1, 0).getDate()}`);
+    } else if (type === 'vorige-maand') {
+      const vm = m === 0 ? 11 : m - 1;
+      const vj = m === 0 ? j - 1 : j;
+      setVanDatum(`${vj}-${String(vm + 1).padStart(2, '0')}-01`);
+      setTotDatum(`${vj}-${String(vm + 1).padStart(2, '0')}-${new Date(vj, vm + 1, 0).getDate()}`);
+    } else if (type === 'kwartaal') {
+      const kw = Math.floor(m / 3);
+      setVanDatum(`${j}-${String(kw * 3 + 1).padStart(2, '0')}-01`);
+      setTotDatum(`${j}-${String(kw * 3 + 3).padStart(2, '0')}-${new Date(j, kw * 3 + 3, 0).getDate()}`);
+    } else if (type === 'jaar') {
+      setVanDatum(`${j}-01-01`);
+      setTotDatum(`${j}-12-31`);
+    }
+  }
+
+  async function exporteerPdf() {
+    if (!vanDatum || !totDatum) {
+      Alert.alert('Selecteer periode', 'Vul een begin- en einddatum in.');
+      return;
+    }
+    const gefilterd = transacties.filter(t => {
+      const d = t.aangemaaktOp?.slice(0, 10) || '';
+      return d >= vanDatum && d <= totDatum;
+    }).sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp));
+
+    if (gefilterd.length === 0) {
+      Alert.alert('Geen transacties', 'Er zijn geen transacties in deze periode.');
+      return;
+    }
+
+    const euro = (b: number) => `€ ${b.toFixed(2).replace('.', ',')}`;
+    const totInkomsten = gefilterd.filter(t => t.soort === 'inkomst').reduce((s, t) => s + parseFloat(t.bedrag || '0'), 0);
+    const totUitgaven = gefilterd.filter(t => t.soort === 'uitgave').reduce((s, t) => s + parseFloat(t.bedrag || '0'), 0);
+    const totBtw = gefilterd.reduce((s, t) => s + parseFloat(t.btwBedrag || '0'), 0);
+
+    const rijen = gefilterd.map(t => `
+      <tr>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${t.datum}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${t.omschrijving}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${t.categorie || '-'}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${t.btwTarief}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:right;color:${t.soort === 'inkomst' ? '#4CAF50' : '#f44336'};">
+          ${t.soort === 'inkomst' ? '+' : '-'}${euro(parseFloat(t.bedrag))}
+        </td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:right;color:#888;">${euro(parseFloat(t.btwBedrag || '0'))}</td>
+      </tr>
+    `).join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>
+      body{font-family:Arial,sans-serif;padding:32px;color:#1a1a1a;}
+      h1{color:#C9A84C;font-size:24px;margin-bottom:4px;}
+      .periode{color:#888;font-size:13px;margin-bottom:24px;}
+      table{width:100%;border-collapse:collapse;font-size:13px;}
+      th{background:#1a1a1a;color:#C9A84C;padding:10px 8px;text-align:left;}
+      th:last-child,th:nth-last-child(2){text-align:right;}
+      .totaal{margin-top:24px;background:#f8f8f8;border-radius:8px;padding:16px;}
+      .totaal-rij{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;}
+      .groen{color:#4CAF50;font-weight:700;}
+      .rood{color:#f44336;font-weight:700;}
+      .goud{color:#C9A84C;font-weight:700;}
+    </style></head><body>
+    <h1>ZZPBox — Transactieoverzicht</h1>
+    <div class="periode">Periode: ${vanDatum} t/m ${totDatum} &nbsp;·&nbsp; ${gefilterd.length} transacties</div>
+    <table>
+      <thead><tr>
+        <th>Datum</th><th>Omschrijving</th><th>Categorie</th><th>BTW</th><th>Bedrag</th><th>BTW bedrag</th>
+      </tr></thead>
+      <tbody>${rijen}</tbody>
+    </table>
+    <div class="totaal">
+      <div class="totaal-rij"><span>Totaal inkomsten</span><span class="groen">${euro(totInkomsten)}</span></div>
+      <div class="totaal-rij"><span>Totaal uitgaven</span><span class="rood">-${euro(totUitgaven)}</span></div>
+      <div class="totaal-rij"><span>Totaal BTW</span><span class="goud">${euro(totBtw)}</span></div>
+      <div class="totaal-rij" style="border-top:1px solid #ddd;margin-top:8px;padding-top:12px;font-weight:700;font-size:15px;">
+        <span>Saldo</span><span class="${totInkomsten - totUitgaven >= 0 ? 'groen' : 'rood'}">${euro(totInkomsten - totUitgaven)}</span>
+      </div>
+    </div>
+    </body></html>`;
+
+    setExportBezig(true);
+    try {
+      const { uri } = await Print.printToFileAsync({ html });
+      await Sharing.shareAsync(uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
+      setExportModalZichtbaar(false);
+    } catch (e) {
+      Alert.alert('Fout', 'Kon PDF niet aanmaken.');
+    } finally {
+      setExportBezig(false);
+    }
+  }
+
   function bevestigVerwijderen(id: string) {
     Alert.alert('Verwijderen', 'Weet u zeker dat u deze transactie wilt verwijderen?', [
       { text: 'Annuleren', style: 'cancel' },
@@ -130,7 +235,18 @@ export default function TransactiesScherm() {
           <Text style={stijlen.terugTekst}>← Terug</Text>
         </TouchableOpacity>
         <Text style={stijlen.koptekstTitel}>Transacties</Text>
-        <View style={{ width: 60 }} />
+        <TouchableOpacity onPress={() => {
+          if (pakket !== 'premium') {
+            Alert.alert('Premium functie', 'PDF export is beschikbaar voor Premium gebruikers.', [
+              { text: 'Annuleren', style: 'cancel' },
+              { text: 'Upgraden', onPress: () => router.push('/(tabs)/abonnement') }
+            ]);
+            return;
+          }
+          setExportModalZichtbaar(true);
+        }}>
+          <Text style={stijlen.exportKnop}>PDF</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={stijlen.scrollInhoud}>
@@ -271,6 +387,45 @@ export default function TransactiesScherm() {
         </View>
       </Modal>
 
+      {/* EXPORT MODAL */}
+      <Modal visible={exportModalZichtbaar} animationType="slide" presentationStyle="pageSheet">
+        <View style={stijlen.modalScherm}>
+          <View style={stijlen.modalKoptekst}>
+            <TouchableOpacity onPress={() => setExportModalZichtbaar(false)}>
+              <Text style={stijlen.annulerenTekst}>Annuleren</Text>
+            </TouchableOpacity>
+            <Text style={stijlen.modalTitel}>PDF exporteren</Text>
+            <View style={{ width: 80 }} />
+          </View>
+          <ScrollView contentContainerStyle={stijlen.modalInhoud}>
+            <Text style={[stijlen.label, { marginBottom: 12 }]}>Snelle selectie</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
+              {[
+                { label: 'Deze maand', type: 'deze-maand' as const },
+                { label: 'Vorige maand', type: 'vorige-maand' as const },
+                { label: 'Dit kwartaal', type: 'kwartaal' as const },
+                { label: 'Dit jaar', type: 'jaar' as const },
+              ].map(p => (
+                <TouchableOpacity key={p.type} style={stijlen.periodeKnop} onPress={() => snelPeriode(p.type)}>
+                  <Text style={stijlen.periodeKnopTekst}>{p.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={stijlen.invoerGroep}>
+              <Text style={stijlen.label}>Van (JJJJ-MM-DD)</Text>
+              <TextInput style={stijlen.invoer} placeholder="2026-01-01" placeholderTextColor="#444" value={vanDatum} onChangeText={setVanDatum} />
+            </View>
+            <View style={stijlen.invoerGroep}>
+              <Text style={stijlen.label}>Tot (JJJJ-MM-DD)</Text>
+              <TextInput style={stijlen.invoer} placeholder="2026-12-31" placeholderTextColor="#444" value={totDatum} onChangeText={setTotDatum} />
+            </View>
+            <TouchableOpacity style={[stijlen.exportKnopGroot, exportBezig && { opacity: 0.7 }]} onPress={exporteerPdf} disabled={exportBezig}>
+              {exportBezig ? <ActivityIndicator color="#1A1A1A" /> : <Text style={stijlen.exportKnopGrootTekst}>PDF genereren & delen</Text>}
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </Modal>
+
       {/* CATEGORIE SELECTIE MODAL */}
       <Modal visible={categorieModalZichtbaar} animationType="slide" presentationStyle="fullScreen">
         <View style={stijlen.modalScherm}>
@@ -376,4 +531,9 @@ const stijlen = StyleSheet.create({
   categorieOptieTekst: { color: '#888', fontSize: 15 },
   categorieOptieTekstActief: { color: '#ffffff', fontWeight: '700' },
   vinkje: { color: '#003DA5', fontSize: 16, fontWeight: '700' },
+  exportKnop: { color: '#C9A84C', fontSize: 13, fontWeight: '800', width: 60, textAlign: 'right' },
+  periodeKnop: { backgroundColor: '#242424', borderWidth: 1, borderColor: '#333', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  periodeKnopTekst: { color: '#aaa', fontSize: 13, fontWeight: '600' },
+  exportKnopGroot: { backgroundColor: '#C9A84C', paddingVertical: 16, borderRadius: 14, alignItems: 'center', marginTop: 8 },
+  exportKnopGrootTekst: { color: '#1A1A1A', fontSize: 16, fontWeight: '900' },
 });

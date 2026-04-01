@@ -218,6 +218,9 @@ export default function FacturenScherm() {
   const [bezig, setBezig] = useState(false);
   const [pdfBezig, setPdfBezig] = useState(false);
   const [exportBezig, setExportBezig] = useState(false);
+  const [exportModalZichtbaar, setExportModalZichtbaar] = useState(false);
+  const [vanDatum, setVanDatum] = useState('');
+  const [totDatum, setTotDatum] = useState('');
   const [isCreditnota, setIsCreditnota] = useState(false);
   const [origineelFactuurNummer, setOrigineelFactuurNummer] = useState('');
 
@@ -445,6 +448,28 @@ export default function FacturenScherm() {
     }
   }
 
+  function snelPeriodeFacturen(type: 'deze-maand' | 'vorige-maand' | 'kwartaal' | 'jaar') {
+    const nu = new Date();
+    const j = nu.getFullYear();
+    const m = nu.getMonth();
+    if (type === 'deze-maand') {
+      setVanDatum(`${j}-${String(m + 1).padStart(2, '0')}-01`);
+      setTotDatum(`${j}-${String(m + 1).padStart(2, '0')}-${new Date(j, m + 1, 0).getDate()}`);
+    } else if (type === 'vorige-maand') {
+      const vm = m === 0 ? 11 : m - 1;
+      const vj = m === 0 ? j - 1 : j;
+      setVanDatum(`${vj}-${String(vm + 1).padStart(2, '0')}-01`);
+      setTotDatum(`${vj}-${String(vm + 1).padStart(2, '0')}-${new Date(vj, vm + 1, 0).getDate()}`);
+    } else if (type === 'kwartaal') {
+      const kw = Math.floor(m / 3);
+      setVanDatum(`${j}-${String(kw * 3 + 1).padStart(2, '0')}-01`);
+      setTotDatum(`${j}-${String(kw * 3 + 3).padStart(2, '0')}-${new Date(j, kw * 3 + 3, 0).getDate()}`);
+    } else if (type === 'jaar') {
+      setVanDatum(`${j}-01-01`);
+      setTotDatum(`${j}-12-31`);
+    }
+  }
+
   async function alleFacturenExporteren() {
     if (pakket === 'gratis') {
       Alert.alert('Premium functie', 'Exporteren is alleen beschikbaar in Premium.', [
@@ -453,31 +478,33 @@ export default function FacturenScherm() {
       ]);
       return;
     }
-    if (facturen.length === 0) {
-      Alert.alert('Geen facturen', 'Er zijn nog geen facturen om te exporteren.');
+    if (!vanDatum || !totDatum) {
+      Alert.alert('Selecteer periode', 'Vul een begin- en einddatum in.');
+      return;
+    }
+    const gefilterd = [...facturen]
+      .filter(f => {
+        const d = f.aangemaaktOp?.slice(0, 10) || '';
+        return d >= vanDatum && d <= totDatum;
+      })
+      .sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp));
+
+    if (gefilterd.length === 0) {
+      Alert.alert('Geen facturen', 'Er zijn geen facturen in deze periode.');
       return;
     }
     setExportBezig(true);
     try {
-      const alleHtml = [...facturen]
-        .sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp))
+      const alleHtml = gefilterd
         .map(f => factuurHtml(f, bedrijf, null))
         .join('<div style="page-break-after: always;"></div>');
 
-      const volledigeHtml = `
-        <!DOCTYPE html><html><head><meta charset="UTF-8">
-        <style>body { margin: 0; } </style></head>
-        <body>${alleHtml}</body></html>
-      `;
+      const volledigeHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>body { margin: 0; }</style></head>
+        <body>${alleHtml}</body></html>`;
       const { uri } = await Print.printToFileAsync({ html: volledigeHtml, base64: false });
-      const deelbaar = await Sharing.isAvailableAsync();
-      if (deelbaar) {
-        await Sharing.shareAsync(uri, {
-          mimeType: 'application/pdf',
-          dialogTitle: 'Alle facturen exporteren',
-          UTI: 'com.adobe.pdf',
-        });
-      }
+      await Sharing.shareAsync(uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
+      setExportModalZichtbaar(false);
     } catch (e) {
       Alert.alert('Fout', 'Kon facturen niet exporteren.');
     } finally {
@@ -555,8 +582,17 @@ export default function FacturenScherm() {
           {exportBezig ? (
             <ActivityIndicator color="#C9A84C" />
           ) : (
-            <TouchableOpacity onPress={alleFacturenExporteren}>
-              <Text style={stijlen.exportKnopTekst}>📥 Export</Text>
+            <TouchableOpacity onPress={() => {
+              if (pakket !== 'premium') {
+                Alert.alert('Premium functie', 'Exporteren is alleen beschikbaar in het Premium pakket.', [
+                  { text: 'Annuleren', style: 'cancel' },
+                  { text: 'Upgraden', onPress: () => router.push('/(tabs)/abonnement') },
+                ]);
+                return;
+              }
+              setExportModalZichtbaar(true);
+            }}>
+              <Text style={stijlen.exportKnopTekst}>PDF</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity style={stijlen.toevoegenKnop} onPress={nieuweFactuur}>
@@ -1170,6 +1206,58 @@ export default function FacturenScherm() {
           </View>
         )}
       </Modal>
+
+      {/* EXPORT MODAL */}
+      <Modal visible={exportModalZichtbaar} animationType="slide" transparent>
+        <View style={stijlen.exportOverlay}>
+          <View style={stijlen.exportModal}>
+            <Text style={stijlen.exportModalTitel}>📥 Facturen exporteren</Text>
+            <Text style={stijlen.exportModalOndertitel}>Selecteer een periode</Text>
+
+            <View style={stijlen.periodeKnoppen}>
+              {(['deze-maand', 'vorige-maand', 'kwartaal', 'jaar'] as const).map(type => (
+                <TouchableOpacity
+                  key={type}
+                  style={stijlen.periodeKnop}
+                  onPress={() => snelPeriodeFacturen(type)}>
+                  <Text style={stijlen.periodeKnopTekst}>
+                    {type === 'deze-maand' ? 'Deze maand' : type === 'vorige-maand' ? 'Vorige maand' : type === 'kwartaal' ? 'Dit kwartaal' : 'Dit jaar'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={{ gap: 8, marginTop: 8 }}>
+              <TextInput
+                style={stijlen.datumInput}
+                placeholder="Van (JJJJ-MM-DD)"
+                placeholderTextColor="#555"
+                value={vanDatum}
+                onChangeText={setVanDatum}
+              />
+              <TextInput
+                style={stijlen.datumInput}
+                placeholder="Tot (JJJJ-MM-DD)"
+                placeholderTextColor="#555"
+                value={totDatum}
+                onChangeText={setTotDatum}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={stijlen.exportKnopGroot}
+              onPress={() => { setExportModalZichtbaar(false); alleFacturenExporteren(); }}>
+              <Text style={stijlen.exportKnopGrootTekst}>PDF genereren & delen</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{ marginTop: 12, alignItems: 'center' }}
+              onPress={() => setExportModalZichtbaar(false)}>
+              <Text style={{ color: '#666', fontSize: 14 }}>Annuleren</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1347,4 +1435,14 @@ const stijlen = StyleSheet.create({
   premiumOverlay: { backgroundColor: '#1e1a0e', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#3a2e0a', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   premiumOverlayTekst: { color: '#C9A84C', fontSize: 13, fontWeight: '600' },
   premiumOverlayKnop: { color: '#FF6B00', fontSize: 13, fontWeight: '800' },
+  exportOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  exportModal: { backgroundColor: '#1A1A1A', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40, borderTopWidth: 1, borderColor: '#2a2a2a' },
+  exportModalTitel: { color: '#fff', fontSize: 18, fontWeight: '800', marginBottom: 4 },
+  exportModalOndertitel: { color: '#666', fontSize: 13, marginBottom: 16 },
+  periodeKnoppen: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  periodeKnop: { backgroundColor: '#242424', borderWidth: 1, borderColor: '#333', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12 },
+  periodeKnopTekst: { color: '#C9A84C', fontSize: 13, fontWeight: '600' },
+  datumInput: { backgroundColor: '#242424', borderWidth: 1, borderColor: '#333', borderRadius: 10, padding: 12, color: '#fff', fontSize: 14 },
+  exportKnopGroot: { backgroundColor: '#C9A84C', borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 16 },
+  exportKnopGrootTekst: { color: '#1A1A1A', fontSize: 15, fontWeight: '800' },
 });
