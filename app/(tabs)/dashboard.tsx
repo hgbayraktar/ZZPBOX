@@ -1,6 +1,8 @@
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet, Text,
@@ -8,6 +10,12 @@ import {
   View
 } from 'react-native';
 import { gebruikGebruiker, gebruikPakket, gebruikTransacties } from '../../hooks/gebruikData';
+
+const IOS_BANNER_ID = 'ca-app-pub-1924459116813725/1234639356';
+const ANDROID_BANNER_ID = 'ca-app-pub-1924459116813725/6431125719';
+const BANNER_ID = __DEV__
+  ? TestIds.BANNER
+  : Platform.OS === 'ios' ? IOS_BANNER_ID : ANDROID_BANNER_ID;
 
 export default function DashboardScherm() {
   const router = useRouter();
@@ -205,13 +213,11 @@ export default function DashboardScherm() {
 
       {pakket === 'gratis' && (
         <View style={stijlen.reclameBanner}>
-          <View style={stijlen.reclameInhoud}>
-            <Text style={stijlen.reclameLabel}>ADVERTENTIE</Text>
-            <Text style={stijlen.reclameTekst}>📢 Hier komt uw advertentie</Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/abonnement')}>
-              <Text style={stijlen.reclameUpgrade}>Reclamevrij? Upgrade →</Text>
-            </TouchableOpacity>
-          </View>
+          <BannerAd
+            unitId={BANNER_ID}
+            size={BannerAdSize.BANNER}
+            requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+          />
         </View>
       )}
 
@@ -295,11 +301,7 @@ const stijlen = StyleSheet.create({
   limietVoortgang: { height: 6, backgroundColor: '#C9A84C', borderRadius: 3 },
   upgradeKnop: { backgroundColor: '#FF6B00', paddingVertical: 12, borderRadius: 10, alignItems: 'center', marginTop: 4 },
   upgradeKnopTekst: { color: '#1A1A1A', fontSize: 13, fontWeight: '800' },
-  reclameBanner: { position: 'absolute', bottom: 70, left: 0, right: 0, height: 56, backgroundColor: '#111111', borderTopWidth: 1, borderTopColor: '#333', borderBottomWidth: 1, borderBottomColor: '#333', justifyContent: 'center' },
-  reclameInhoud: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
-  reclameLabel: { color: '#444', fontSize: 9, fontWeight: '800', letterSpacing: 1.5, position: 'absolute', top: -18, left: 16 },
-  reclameTekst: { color: '#888', fontSize: 13, fontWeight: '500' },
-  reclameUpgrade: { color: '#C9A84C', fontSize: 11, fontWeight: '700' },
+  reclameBanner: { position: 'absolute', bottom: 70, left: 0, right: 0, alignItems: 'center', backgroundColor: '#111111', borderTopWidth: 1, borderTopColor: '#333' },
   ondersteNavigatie: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#242424', flexDirection: 'row', paddingBottom: 28, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#333' },
   navigatieItem: { flex: 1, alignItems: 'center', gap: 4 },
   navigatieIcoon: { fontSize: 22 },

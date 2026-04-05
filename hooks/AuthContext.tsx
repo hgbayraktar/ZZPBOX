@@ -1,7 +1,7 @@
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { auth, db } from '../constants/firebase';
+import Purchases, { CustomerInfo } from 'react-native-purchases';
+import { auth } from '../constants/firebase';
 
 type AuthContextType = {
   gebruiker: User | null;
@@ -14,6 +14,10 @@ const AuthContext = createContext<AuthContextType>({
   laden: true,
   pakket: 'gratis',
 });
+
+function isPremium(info: CustomerInfo): boolean {
+  return !!info.entitlements.active['premium'];
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [gebruiker, setGebruiker] = useState<User | null>(null);
@@ -29,12 +33,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!gebruiker) { setPakket('gratis'); return; }
-    const afmelden = onSnapshot(doc(db, 'gebruikers', gebruiker.uid), (snap) => {
-      if (snap.exists()) setPakket(snap.data().pakket || 'gratis');
-      else setPakket('gratis');
-    });
-    return afmelden;
+    if (!gebruiker) {
+      setPakket('gratis');
+      return;
+    }
+
+    let actief = true;
+
+    Purchases.getCustomerInfo()
+      .then((info) => {
+        if (actief) setPakket(isPremium(info) ? 'premium' : 'gratis');
+      })
+      .catch(() => {
+        if (actief) setPakket('gratis');
+      });
+
+    let verwijder: (() => void) | undefined;
+    try {
+      verwijder = Purchases.addCustomerInfoUpdateListener((info) => {
+        if (actief) setPakket(isPremium(info) ? 'premium' : 'gratis');
+      });
+    } catch {
+      // RevenueCat not yet initialized
+    }
+
+    return () => {
+      actief = false;
+      verwijder?.();
+    };
   }, [gebruiker]);
 
   return (

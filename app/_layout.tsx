@@ -5,6 +5,11 @@ import { Stack } from 'expo-router';
 import * as SchermCapture from 'expo-screen-capture';
 import { useEffect } from 'react';
 
+// Initialize RevenueCat immediately (before any component mounts)
+if (process.env.NODE_ENV !== 'development') {
+  initializePurchases();
+}
+
 function AppInhoud() {
   const pakket = gebruikPakket();
 
@@ -29,10 +34,6 @@ function AppInhoud() {
 }
 
 export default function RootLayout() {
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'development') initializePurchases();
-  }, []);
-
   return (
     <AuthProvider>
       <AppInhoud />

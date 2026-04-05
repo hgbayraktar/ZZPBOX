@@ -64,6 +64,13 @@
     "plugins": [
       "expo-router",
       [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-1924459116813725~3501710046",
+          "iosAppId": "ca-app-pub-1924459116813725~4188105755"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
@@ -83,7 +90,8 @@
           }
         }
       ],
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "react-native-google-mobile-ads"
     ],
     "experiments": {
       "typedRoutes": true
