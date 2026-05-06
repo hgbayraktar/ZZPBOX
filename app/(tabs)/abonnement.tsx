@@ -2,9 +2,11 @@ import { auth, db } from '@/constants/firebase';
 import { useRouter } from 'expo-router';
 import { doc, setDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import * as ScreenCapture from 'expo-screen-capture';
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -46,6 +48,8 @@ export default function AbonnementScherm() {
 
   useEffect(() => {
     laadPakketten();
+    ScreenCapture.allowScreenCaptureAsync();
+    return () => { ScreenCapture.preventScreenCaptureAsync(); };
   }, []);
 
   async function laadPakketten() {
@@ -289,6 +293,16 @@ export default function AbonnementScherm() {
           </Text>
         </View>
 
+        <View style={stijlen.juridischKaart}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://zzpbox.nl/privacy')}>
+            <Text style={stijlen.juridischLink}>Privacybeleid</Text>
+          </TouchableOpacity>
+          <Text style={stijlen.juridischScheidingsteken}> · </Text>
+          <TouchableOpacity onPress={() => Linking.openURL('https://zzpbox.nl/voorwaarden')}>
+            <Text style={stijlen.juridischLink}>Algemene Voorwaarden</Text>
+          </TouchableOpacity>
+        </View>
+
       </ScrollView>
     </View>
   );
@@ -347,4 +361,7 @@ const stijlen = StyleSheet.create({
   annuleringKaart: { backgroundColor: '#242424', borderRadius: 14, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#2a2a2a' },
   annuleringTitel: { color: '#888', fontSize: 13, fontWeight: '700', marginBottom: 10 },
   annuleringTekst: { color: '#555', fontSize: 12, lineHeight: 22 },
+  juridischKaart: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 16, marginBottom: 8 },
+  juridischLink: { color: '#555', fontSize: 12, textDecorationLine: 'underline' },
+  juridischScheidingsteken: { color: '#444', fontSize: 12 },
 });
