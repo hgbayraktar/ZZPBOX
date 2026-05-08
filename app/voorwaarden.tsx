@@ -53,8 +53,8 @@ export default function VoorwaardenScherm() {
             3.1 ZZPBox biedt de volgende abonnementen aan:{'\n\n'}
             <Text style={stijlen.vet}>Gratis:</Text> €0 — beperkt gebruik (max. 3 invoeren per dag, max. 20 per maand, max. 3 klanten, max. 5 producten/diensten). Inclusief advertenties.{'\n\n'}
             <Text style={stijlen.vet}>Premium Maandelijks:</Text> €11,99 per maand — onbeperkt gebruik, facturen, PDF delen, geen advertenties.{'\n\n'}
-            <Text style={stijlen.vet}>Premium Kwartaal:</Text> €31,47 per kwartaal (€10,49/maand) — zelfde voordelen als maandelijks, 13% korting.{'\n\n'}
-            <Text style={stijlen.vet}>Premium Jaarlijks:</Text> €119,88 per jaar (€9,99/maand) — zelfde voordelen als maandelijks, 17% korting.{'\n\n'}
+            <Text style={stijlen.vet}>Premium Kwartaal:</Text> €31,49 per kwartaal (€10,50/maand) — zelfde voordelen als maandelijks, 13% korting.{'\n\n'}
+            <Text style={stijlen.vet}>Premium Jaarlijks:</Text> €119,99 per jaar (€10,00/maand) — zelfde voordelen als maandelijks, 17% korting.{'\n\n'}
             3.2 Nieuwe gebruikers starten automatisch met het Gratis pakket.{'\n\n'}
             3.3 Betalingen worden automatisch verwerkt via de App Store (iOS) of Google Play (Android).{'\n\n'}
             3.4 Bij niet-betaling wordt de toegang tot Premium functies opgeschort.
