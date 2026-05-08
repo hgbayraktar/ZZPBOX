@@ -12,7 +12,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "nl.zzpbox.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSUserTrackingUsageDescription": "We use this to show you relevant ads and improve your experience."
       },
       "entitlements": {
         "aps-environment": "production",
@@ -91,7 +92,8 @@
         }
       ],
       "@react-native-google-signin/google-signin",
-      "react-native-google-mobile-ads"
+      "react-native-google-mobile-ads",
+      "expo-tracking-transparency"
     ],
     "experiments": {
       "typedRoutes": true

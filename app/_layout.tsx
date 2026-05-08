@@ -3,7 +3,9 @@ import { AuthProvider } from '@/hooks/AuthContext';
 import { gebruikPakket } from '@/hooks/gebruikData';
 import { Stack } from 'expo-router';
 import * as SchermCapture from 'expo-screen-capture';
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 
 // Initialize RevenueCat immediately (before any component mounts)
 if (process.env.NODE_ENV !== 'development') {
@@ -12,6 +14,12 @@ if (process.env.NODE_ENV !== 'development') {
 
 function AppInhoud() {
   const pakket = gebruikPakket();
+
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      requestTrackingPermissionsAsync();
+    }
+  }, []);
 
   useEffect(() => {
     if (pakket === 'premium') {
