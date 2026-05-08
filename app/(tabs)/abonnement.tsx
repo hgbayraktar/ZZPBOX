@@ -24,6 +24,18 @@ const PAKKET_STIJL = {
   jaar: { label: 'Jaarlijks', besparing: '17% korting', populair: false, kleur: '#4CAF50' },
 };
 
+const STATISCHE_PRIJS: Record<AbonnementSoort, string> = {
+  maand: '€11,99',
+  kwartaal: '€31,49',
+  jaar: '€119,99',
+};
+
+const STATISCHE_MAANDPRIJS: Record<AbonnementSoort, string> = {
+  maand: 'per maand',
+  kwartaal: '€10,50 /maand',
+  jaar: '€10,00 /maand',
+};
+
 const PREMIUM_VOORDELEN = [
   { icoon: '♾️', tekst: 'Onbeperkt inkomsten & uitgaven invoeren' },
   { icoon: '👥', tekst: 'Onbeperkt klanten beheren' },
@@ -78,17 +90,17 @@ export default function AbonnementScherm() {
 
   function getPrijs(soort: AbonnementSoort): string {
     const pakket = pakketten[soort];
-    if (!pakket) return '...';
+    if (!pakket) return STATISCHE_PRIJS[soort];
     return pakket.product.priceString;
   }
 
   function getMaandPrijs(soort: AbonnementSoort): string {
     const pakket = pakketten[soort];
-    if (!pakket) return '...';
+    if (!pakket) return STATISCHE_MAANDPRIJS[soort];
     const prijs = pakket.product.price;
     if (soort === 'kwartaal') return `€ ${(prijs / 3).toFixed(2).replace('.', ',')} /maand`;
     if (soort === 'jaar') return `€ ${(prijs / 12).toFixed(2).replace('.', ',')} /maand`;
-    return '';
+    return STATISCHE_MAANDPRIJS[soort];
   }
 
   async function abonnemenNemen() {
