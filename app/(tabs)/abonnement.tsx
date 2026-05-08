@@ -242,6 +242,16 @@ export default function AbonnementScherm() {
           )}
         </TouchableOpacity>
 
+        <View style={stijlen.juridischKaartProminant}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://zzpbox.nl/privacy')}>
+            <Text style={stijlen.juridischLinkProminant}>Privacybeleid</Text>
+          </TouchableOpacity>
+          <Text style={stijlen.juridischScheidingsteken}> · </Text>
+          <TouchableOpacity onPress={() => Linking.openURL('https://zzpbox.nl/voorwaarden')}>
+            <Text style={stijlen.juridischLinkProminant}>Algemene Voorwaarden (EULA)</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={stijlen.garantieKaart}>
           <Text style={stijlen.garantieIcoon}>🛡️</Text>
           <View style={stijlen.garantieTekstBlok}>
@@ -293,15 +303,6 @@ export default function AbonnementScherm() {
           </Text>
         </View>
 
-        <View style={stijlen.juridischKaart}>
-          <TouchableOpacity onPress={() => Linking.openURL('https://zzpbox.nl/privacy')}>
-            <Text style={stijlen.juridischLink}>Privacybeleid</Text>
-          </TouchableOpacity>
-          <Text style={stijlen.juridischScheidingsteken}> · </Text>
-          <TouchableOpacity onPress={() => Linking.openURL('https://zzpbox.nl/voorwaarden')}>
-            <Text style={stijlen.juridischLink}>Algemene Voorwaarden</Text>
-          </TouchableOpacity>
-        </View>
 
       </ScrollView>
     </View>
@@ -363,5 +364,7 @@ const stijlen = StyleSheet.create({
   annuleringTekst: { color: '#555', fontSize: 12, lineHeight: 22 },
   juridischKaart: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 16, marginBottom: 8 },
   juridischLink: { color: '#555', fontSize: 12, textDecorationLine: 'underline' },
-  juridischScheidingsteken: { color: '#444', fontSize: 12 },
+  juridischScheidingsteken: { color: '#888', fontSize: 13 },
+  juridischKaartProminant: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 12, marginBottom: 16, flexWrap: 'wrap', gap: 4 },
+  juridischLinkProminant: { color: '#C9A84C', fontSize: 13, textDecorationLine: 'underline', fontWeight: '600' },
 });
