@@ -1,4 +1,5 @@
 import { auth, db } from '@/constants/firebase';
+import { useAuth } from '@/hooks/AuthContext';
 import { useRouter } from 'expo-router';
 import { doc, setDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
@@ -49,6 +50,7 @@ const PREMIUM_VOORDELEN = [
 
 export default function AbonnementScherm() {
   const router = useRouter();
+  const { updatePakket } = useAuth();
   const [geselecteerd, setGeselecteerd] = useState<AbonnementSoort>('kwartaal');
   const [pakketten, setPakketten] = useState<Record<AbonnementSoort, PurchasesPackage | null>>({
     maand: null,
@@ -57,6 +59,7 @@ export default function AbonnementScherm() {
   });
   const [laden, setLaden] = useState(true);
   const [kopen, setKopen] = useState(false);
+  const [herstellen, setHerstellen] = useState(false);
 
   useEffect(() => {
     laadPakketten();
@@ -111,7 +114,10 @@ export default function AbonnementScherm() {
     }
     try {
       setKopen(true);
-      await Purchases.purchasePackage(pakket);
+      const { customerInfo } = await Purchases.purchasePackage(pakket);
+      if (!!customerInfo.entitlements.active['premium']) {
+        updatePakket('premium');
+      }
       const gebruiker = auth.currentUser;
       if (gebruiker) {
         await setDoc(doc(db, 'gebruikers', gebruiker.uid), { pakket: 'premium' }, { merge: true });
@@ -125,6 +131,31 @@ export default function AbonnementScherm() {
       }
     } finally {
       setKopen(false);
+    }
+  }
+
+  async function herstelAankopen() {
+    try {
+      setHerstellen(true);
+      const info = await Purchases.restorePurchases();
+      if (!!info.entitlements.active['premium']) {
+        updatePakket('premium');
+        const gebruiker = auth.currentUser;
+        if (gebruiker) {
+          await setDoc(doc(db, 'gebruikers', gebruiker.uid), { pakket: 'premium' }, { merge: true });
+        }
+        Alert.alert('✅ Hersteld!', 'Uw Premium abonnement is hersteld.', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        Alert.alert('Geen abonnement', 'Er is geen actief Premium abonnement gevonden.');
+      }
+    } catch (e: any) {
+      if (!e.userCancelled) {
+        Alert.alert('Fout', 'Aankopen herstellen mislukt.');
+      }
+    } finally {
+      setHerstellen(false);
     }
   }
 
@@ -254,6 +285,18 @@ export default function AbonnementScherm() {
           )}
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={[stijlen.herstellenKnop, herstellen && { opacity: 0.7 }]}
+          onPress={herstelAankopen}
+          disabled={herstellen}
+          activeOpacity={0.8}>
+          {herstellen ? (
+            <ActivityIndicator color="#C9A84C" size="small" />
+          ) : (
+            <Text style={stijlen.herstellenKnopTekst}>Aankopen herstellen</Text>
+          )}
+        </TouchableOpacity>
+
         <View style={stijlen.juridischKaartProminant}>
           <TouchableOpacity onPress={() => Linking.openURL('https://zzpbox.nl/privacy')}>
             <Text style={stijlen.juridischLinkProminant}>Privacybeleid</Text>
@@ -358,8 +401,10 @@ const stijlen = StyleSheet.create({
   samenvattingBedrag: { color: '#C9A84C', fontSize: 16, fontWeight: '800' },
   samenvattingOndertekst: { color: '#666', fontSize: 12 },
   samenvattingBesparing: { color: '#4CAF50', fontSize: 12, fontWeight: '600' },
-  upgradeKnop: { backgroundColor: '#FF6B00', paddingVertical: 18, borderRadius: 14, alignItems: 'center', marginBottom: 16, shadowColor: '#FF6B00', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 10 },
+  upgradeKnop: { backgroundColor: '#FF6B00', paddingVertical: 18, borderRadius: 14, alignItems: 'center', marginBottom: 12, shadowColor: '#FF6B00', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 10 },
   upgradeKnopTekst: { color: '#1A1A1A', fontSize: 17, fontWeight: '900', letterSpacing: 1 },
+  herstellenKnop: { paddingVertical: 14, borderRadius: 14, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: '#C9A84C' },
+  herstellenKnopTekst: { color: '#C9A84C', fontSize: 14, fontWeight: '600' },
   garantieKaart: { flexDirection: 'row', backgroundColor: '#1e2d1e', borderRadius: 14, padding: 16, marginBottom: 24, borderWidth: 1, borderColor: '#2d4a2d', gap: 12, alignItems: 'flex-start' },
   garantieIcoon: { fontSize: 28 },
   garantieTekstBlok: { flex: 1 },

@@ -1,18 +1,21 @@
+import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
-import { auth } from '../constants/firebase';
+import { auth, db } from '../constants/firebase';
 
 type AuthContextType = {
   gebruiker: User | null;
   laden: boolean;
   pakket: 'gratis' | 'premium';
+  updatePakket: (p: 'gratis' | 'premium') => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
   gebruiker: null,
   laden: true,
   pakket: 'gratis',
+  updatePakket: () => {},
 });
 
 function isPremium(info: CustomerInfo): boolean {
@@ -38,33 +41,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    let actief = true;
+    let active = true;
 
-    Purchases.getCustomerInfo()
-      .then((info) => {
-        if (actief) setPakket(isPremium(info) ? 'premium' : 'gratis');
-      })
-      .catch(() => {
-        if (actief) setPakket('gratis');
-      });
+    async function syncPremium() {
+      try {
+        await Purchases.logIn(gebruiker!.uid);
+      } catch (e) {
+        console.error('RevenueCat logIn failed:', e);
+      }
 
-    let verwijder: (() => void) | undefined;
+      try {
+        const info = await Purchases.getCustomerInfo();
+        if (active) setPakket(isPremium(info) ? 'premium' : 'gratis');
+      } catch {
+        // Firebase fallback
+        try {
+          const snap = await getDoc(doc(db, 'gebruikers', gebruiker!.uid));
+          if (active && snap.exists() && snap.data()?.pakket === 'premium') {
+            setPakket('premium');
+          }
+        } catch {
+          if (active) setPakket('gratis');
+        }
+      }
+    }
+
+    syncPremium();
+
     try {
-      verwijder = Purchases.addCustomerInfoUpdateListener((info) => {
-        if (actief) setPakket(isPremium(info) ? 'premium' : 'gratis');
+      Purchases.addCustomerInfoUpdateListener((info) => {
+        if (active) setPakket(isPremium(info) ? 'premium' : 'gratis');
       });
-    } catch {
-      // RevenueCat not yet initialized
+    } catch (e) {
+      console.error('addCustomerInfoUpdateListener failed:', e);
     }
 
     return () => {
-      actief = false;
-      verwijder?.();
+      active = false;
     };
   }, [gebruiker]);
 
   return (
-    <AuthContext.Provider value={{ gebruiker, laden, pakket }}>
+    <AuthContext.Provider value={{ gebruiker, laden, pakket, updatePakket: setPakket }}>
       {children}
     </AuthContext.Provider>
   );

@@ -8,9 +8,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 // Initialize RevenueCat immediately (before any component mounts)
-if (process.env.NODE_ENV !== 'development') {
-  initializePurchases();
-}
+initializePurchases();
 
 function AppInhoud() {
   const pakket = gebruikPakket();
