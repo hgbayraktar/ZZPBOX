@@ -106,6 +106,8 @@ export default function AbonnementScherm() {
     return STATISCHE_MAANDPRIJS[soort];
   }
 
+  const ENTITLEMENT_ID = 'ZzpBox Pro';
+
   async function abonnemenNemen() {
     const pakket = pakketten[geselecteerd];
     if (!pakket) {
@@ -114,20 +116,40 @@ export default function AbonnementScherm() {
     }
     try {
       setKopen(true);
-      const { customerInfo } = await Purchases.purchasePackage(pakket);
-      if (!!customerInfo.entitlements.active['premium']) {
-        updatePakket('premium');
-      }
+
       const gebruiker = auth.currentUser;
       if (gebruiker) {
-        await setDoc(doc(db, 'gebruikers', gebruiker.uid), { pakket: 'premium' }, { merge: true });
+        await Purchases.logIn(gebruiker.uid);
       }
-      Alert.alert('✅ Gelukt!', 'U heeft nu Premium toegang!', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+
+      const { customerInfo } = await Purchases.purchasePackage(pakket);
+
+      if (customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined) {
+        updatePakket('premium');
+        if (gebruiker) {
+          try {
+            await setDoc(doc(db, 'gebruikers', gebruiker.uid), { pakket: 'premium' }, { merge: true });
+          } catch (firebaseError) {
+            console.error('Firebase write error:', firebaseError);
+          }
+        }
+        Alert.alert('✅ Gelukt!', 'U heeft nu Premium toegang!', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        const restoreInfo = await Purchases.restorePurchases();
+        if (restoreInfo.entitlements.active[ENTITLEMENT_ID] !== undefined) {
+          updatePakket('premium');
+          Alert.alert('✅ Gelukt!', 'U heeft nu Premium toegang!', [
+            { text: 'OK', onPress: () => router.back() }
+          ]);
+        } else {
+          Alert.alert('Fout', 'Abonnement kon niet worden geverifieerd. Probeer de aankoop te herstellen.');
+        }
+      }
     } catch (e: any) {
       if (!e.userCancelled) {
-        Alert.alert('Fout', 'Er is iets misgegaan bij de betaling.');
+        Alert.alert('Fout', e?.message || 'Er is iets misgegaan bij de betaling.');
       }
     } finally {
       setKopen(false);
@@ -137,12 +159,21 @@ export default function AbonnementScherm() {
   async function herstelAankopen() {
     try {
       setHerstellen(true);
+
+      const gebruiker = auth.currentUser;
+      if (gebruiker) {
+        await Purchases.logIn(gebruiker.uid);
+      }
+
       const info = await Purchases.restorePurchases();
-      if (!!info.entitlements.active['premium']) {
+      if (info.entitlements.active[ENTITLEMENT_ID] !== undefined) {
         updatePakket('premium');
-        const gebruiker = auth.currentUser;
         if (gebruiker) {
-          await setDoc(doc(db, 'gebruikers', gebruiker.uid), { pakket: 'premium' }, { merge: true });
+          try {
+            await setDoc(doc(db, 'gebruikers', gebruiker.uid), { pakket: 'premium' }, { merge: true });
+          } catch (dbErr) {
+            console.error('Restore DB error:', dbErr);
+          }
         }
         Alert.alert('✅ Hersteld!', 'Uw Premium abonnement is hersteld.', [
           { text: 'OK', onPress: () => router.back() }

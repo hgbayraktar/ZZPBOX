@@ -18,8 +18,10 @@ const AuthContext = createContext<AuthContextType>({
   updatePakket: () => {},
 });
 
+const ENTITLEMENT_ID = 'ZzpBox Pro';
+
 function isPremium(info: CustomerInfo): boolean {
-  return !!info.entitlements.active['premium'];
+  return !!info.entitlements.active[ENTITLEMENT_ID];
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
