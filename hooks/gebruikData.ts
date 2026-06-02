@@ -334,6 +334,45 @@ export function gebruikFacturen() {
   return { facturen, laden, toevoegen, bijwerken, verwijderen };
 }
 
+export function gebruikOffertes() {
+  const { gebruiker } = gebruikGebruiker();
+  const [offertes, setOffertes] = useState<any[]>([]);
+  const [laden, setLaden] = useState(true);
+
+  useEffect(() => {
+    if (!gebruiker) return;
+    const afmelden = onSnapshot(
+      collection(db, 'gebruikers', gebruiker.uid, 'offertes'),
+      (snap) => {
+        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setOffertes(gegevens);
+        setLaden(false);
+      }
+    );
+    return afmelden;
+  }, [gebruiker]);
+
+  async function toevoegen(offerte: any) {
+    if (!gebruiker) return;
+    await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'offertes'), {
+      ...offerte,
+      aangemaaktOp: new Date().toISOString(),
+    });
+  }
+
+  async function bijwerken(id: string, gegevens: any) {
+    if (!gebruiker) return;
+    await updateDoc(doc(db, 'gebruikers', gebruiker.uid, 'offertes', id), gegevens);
+  }
+
+  async function verwijderen(id: string) {
+    if (!gebruiker) return;
+    await deleteDoc(doc(db, 'gebruikers', gebruiker.uid, 'offertes', id));
+  }
+
+  return { offertes, laden, toevoegen, bijwerken, verwijderen };
+}
+
 export function gebruikBedrijf() {
   const { gebruiker } = gebruikGebruiker();
   const [bedrijf, setBedrijf] = useState<any>({});
