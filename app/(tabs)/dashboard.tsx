@@ -151,6 +151,16 @@ export default function DashboardScherm() {
             <Text style={stijlen.actieIcoon}>📊</Text>
             <Text style={stijlen.actieTekst}>Rapport{'\n'}bekijken</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[stijlen.actieKaart, pakket === 'gratis' && stijlen.actieKaartGesloten, { width: '100%' }]}
+            onPress={() => pakket === 'premium'
+              ? router.push('/(tabs)/offertes' as any)
+              : router.push('/(tabs)/abonnement')}
+            activeOpacity={0.8}>
+            <Text style={stijlen.actieIcoon}>📋</Text>
+            <Text style={stijlen.actieTekst}>Offerte aanmaken</Text>
+            {pakket === 'gratis' && <Text style={stijlen.slotIcoon}>🔒</Text>}
+          </TouchableOpacity>
         </View>
 
         <Text style={stijlen.sectieTitel}>Recente transacties</Text>
@@ -237,6 +247,14 @@ export default function DashboardScherm() {
             : router.push('/(tabs)/abonnement')}>
           <Text style={stijlen.navigatieIcoon}>📄</Text>
           <Text style={stijlen.navigatieLabel}>Facturen</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={stijlen.navigatieItem}
+          onPress={() => pakket === 'premium'
+            ? router.push('/(tabs)/offertes' as any)
+            : router.push('/(tabs)/abonnement')}>
+          <Text style={stijlen.navigatieIcoon}>📋</Text>
+          <Text style={stijlen.navigatieLabel}>Offertes</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={stijlen.navigatieItem}
