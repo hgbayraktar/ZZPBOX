@@ -362,6 +362,7 @@ export default function AbonnementScherm() {
             { functie: 'Klanten', gratis: '3', premium: '∞' },
             { functie: 'Producten/diensten', gratis: '5', premium: '∞' },
             { functie: 'Facturen', gratis: '✗', premium: '✓' },
+            { functie: 'Offertes', gratis: '✗', premium: '✓' },
             { functie: 'PDF delen', gratis: '✗', premium: '✓' },
             { functie: 'Logo op factuur', gratis: '✗', premium: '✓' },
             { functie: 'Rapporten', gratis: '✓', premium: '✓' },
