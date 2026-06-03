@@ -21,20 +21,20 @@ type AbonnementSoort = 'maand' | 'kwartaal' | 'jaar';
 
 const PAKKET_STIJL = {
   maand: { label: 'Maandelijks', besparing: null, populair: false, kleur: '#888' },
-  kwartaal: { label: 'Per kwartaal', besparing: '13% korting', populair: true, kleur: '#C9A84C' },
-  jaar: { label: 'Jaarlijks', besparing: '17% korting', populair: false, kleur: '#4CAF50' },
+  kwartaal: { label: 'Per kwartaal', besparing: '17% korting', populair: true, kleur: '#C9A84C' },
+  jaar: { label: 'Jaarlijks', besparing: '27% korting', populair: false, kleur: '#4CAF50' },
 };
 
 const STATISCHE_PRIJS: Record<AbonnementSoort, string> = {
-  maand: '€11,99',
-  kwartaal: '€31,49',
-  jaar: '€119,99',
+  maand: '€7,99',
+  kwartaal: '€19,99',
+  jaar: '€69,99',
 };
 
 const STATISCHE_MAANDPRIJS: Record<AbonnementSoort, string> = {
   maand: 'per maand',
-  kwartaal: '€10,50 /maand',
-  jaar: '€10,00 /maand',
+  kwartaal: '€6,66 /maand',
+  jaar: '€5,83 /maand',
 };
 
 const PREMIUM_VOORDELEN = [
