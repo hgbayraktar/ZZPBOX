@@ -603,7 +603,7 @@ export default function FacturenScherm() {
 
       {pakket === 'gratis' && (
         <View style={stijlen.premiumBalk}>
-          <Text style={stijlen.premiumBalkTekst}>🔒 Facturen vereist Premium — vanaf €9,99/maand</Text>
+          <Text style={stijlen.premiumBalkTekst}>🔒 Facturen vereist Premium — vanaf €7,99/maand</Text>
         </View>
       )}
 

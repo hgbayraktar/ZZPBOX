@@ -214,7 +214,7 @@ export default function DashboardScherm() {
             <TouchableOpacity
               style={stijlen.upgradeKnop}
               onPress={() => router.push('/(tabs)/abonnement')}>
-              <Text style={stijlen.upgradeKnopTekst}>⚡ Upgraden naar Premium — vanaf €9,99/maand</Text>
+              <Text style={stijlen.upgradeKnopTekst}>⚡ Upgraden naar Premium — vanaf €7,99/maand</Text>
             </TouchableOpacity>
           </View>
         )}

@@ -42,6 +42,7 @@ const PREMIUM_VOORDELEN = [
   { icoon: '👥', tekst: 'Onbeperkt klanten beheren' },
   { icoon: '📦', tekst: 'Onbeperkt producten & diensten' },
   { icoon: '📄', tekst: 'Facturen aanmaken & versturen' },
+  { icoon: '📋', tekst: 'Offertes aanmaken & omzetten naar factuur' },
   { icoon: '📤', tekst: 'PDF delen via WhatsApp & e-mail' },
   { icoon: '🖼️', tekst: 'Bedrijfslogo op facturen' },
   { icoon: '📊', tekst: 'Uitgebreide rapporten (jaar/kwartaal/maand)' },
