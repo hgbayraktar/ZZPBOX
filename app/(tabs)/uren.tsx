@@ -803,7 +803,7 @@ export default function UrenScherm() {
       <Modal visible={factuurModal} animationType="slide" presentationStyle="pageSheet">
         <View style={s.modalScherm}>
           <View style={s.modalHeader}>
-            <TouchableOpacity onPress={() => setFactuurModal(false)}>
+            <TouchableOpacity onPress={() => { setFactuurModal(false); setBtwPickerZichtbaar(false); }}>
               <Text style={s.modalAnnuleer}>Annuleren</Text>
             </TouchableOpacity>
             <Text style={s.modalTitel}>Factuur aanmaken</Text>
