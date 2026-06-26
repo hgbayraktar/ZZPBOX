@@ -386,6 +386,10 @@ export function gebruikUren() {
         const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         setUren(gegevens);
         setLaden(false);
+      },
+      (_err) => {
+        setUren([]);
+        setLaden(false);
       }
     );
     return afmelden;
