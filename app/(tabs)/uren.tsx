@@ -12,7 +12,6 @@ import {
   View,
 } from 'react-native';
 import {
-  gebruikBedrijf,
   gebruikFacturen,
   gebruikKlanten,
   gebruikPakket,
@@ -66,7 +65,6 @@ export default function UrenScherm() {
   const { uren, toevoegen, bijwerken, verwijderen } = gebruikUren();
   const { facturen, toevoegen: factuurToevoegen } = gebruikFacturen();
   const { toevoegen: transactieToevoegen } = gebruikTransacties();
-  const { bedrijf } = gebruikBedrijf();
 
   // Timer state
   const [timerActief, setTimerActief] = useState(false);
