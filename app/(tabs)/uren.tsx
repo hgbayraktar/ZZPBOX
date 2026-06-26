@@ -200,6 +200,7 @@ export default function UrenScherm() {
     });
 
     setHandmatigModal(false);
+    setKlantPickerVoor(null);
     setHandDatum(vandaag());
     setHandStart('');
     setHandEind('');
@@ -245,6 +246,7 @@ export default function UrenScherm() {
     });
 
     setEditModal(false);
+    setKlantPickerVoor(null);
   }
 
   function verwijderenBevestigen(id: string) {
@@ -586,7 +588,7 @@ export default function UrenScherm() {
       <Modal visible={editModal} animationType="slide" presentationStyle="pageSheet">
         <View style={s.modalScherm}>
           <View style={s.modalHeader}>
-            <TouchableOpacity onPress={() => setEditModal(false)}>
+            <TouchableOpacity onPress={() => { setEditModal(false); setKlantPickerVoor(null); }}>
               <Text style={s.modalAnnuleer}>Annuleren</Text>
             </TouchableOpacity>
             <Text style={s.modalTitel}>Registratie bewerken</Text>
@@ -681,7 +683,7 @@ export default function UrenScherm() {
       <Modal visible={handmatigModal} animationType="slide" presentationStyle="pageSheet">
         <View style={s.modalScherm}>
           <View style={s.modalHeader}>
-            <TouchableOpacity onPress={() => setHandmatigModal(false)}>
+            <TouchableOpacity onPress={() => { setHandmatigModal(false); setKlantPickerVoor(null); }}>
               <Text style={s.modalAnnuleer}>Annuleren</Text>
             </TouchableOpacity>
             <Text style={s.modalTitel}>Uren toevoegen</Text>
