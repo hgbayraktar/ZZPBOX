@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Modal,
+  Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -707,7 +708,8 @@ export default function UrenScherm() {
 
       {/* === Klant picker modal === */}
       <Modal visible={klantPickerVoor !== null} animationType="fade" transparent>
-        <TouchableOpacity style={s.klantPickerOverlay} activeOpacity={1} onPress={() => setKlantPickerVoor(null)}>
+        <View style={s.klantPickerOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setKlantPickerVoor(null)} />
           <View style={s.klantPickerSheet}>
             <View style={s.klantPickerHeader}>
               <Text style={s.klantPickerTitel}>Klant selecteren</Text>
@@ -747,7 +749,7 @@ export default function UrenScherm() {
               )}
             </ScrollView>
           </View>
-        </TouchableOpacity>
+        </View>
       </Modal>
 
       {/* === Factuur aanmaken modal === */}
