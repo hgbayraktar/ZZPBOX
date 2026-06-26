@@ -49,6 +49,15 @@ function vandaag(): string {
   return new Date().toISOString().split('T')[0];
 }
 
+function isoNaarHHMM(iso: string): string {
+  try {
+    const date = new Date(iso);
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  } catch {
+    return '';
+  }
+}
+
 function formatDatumLang(d: string): string {
   try {
     const date = new Date(d + 'T12:00:00');
@@ -76,7 +85,7 @@ export default function UrenScherm() {
 
   // Modals
   const [handmatigModal, setHandmatigModal] = useState(false);
-  const [klantPickerVoor, setKlantPickerVoor] = useState<'timer' | 'handmatig' | 'factuur' | null>(null);
+  const [klantPickerVoor, setKlantPickerVoor] = useState<'timer' | 'handmatig' | 'edit' | null>(null);
   const [btwPickerZichtbaar, setBtwPickerZichtbaar] = useState(false);
   const [factuurModal, setFactuurModal] = useState(false);
 
@@ -94,6 +103,16 @@ export default function UrenScherm() {
   const [factuurOmschrijving, setFactuurOmschrijving] = useState('');
   const [factuurUurtarief, setFactuurUurtarief] = useState('');
   const [factuurBtw, setFactuurBtw] = useState('21%');
+
+  // Edit form
+  const [editModal, setEditModal] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [editDatum, setEditDatum] = useState('');
+  const [editStart, setEditStart] = useState('');
+  const [editEind, setEditEind] = useState('');
+  const [editKlantId, setEditKlantId] = useState('');
+  const [editOmschrijving, setEditOmschrijving] = useState('');
+  const [editGefactureerd, setEditGefactureerd] = useState(false);
 
   // Timer interval
   useEffect(() => {
@@ -189,6 +208,46 @@ export default function UrenScherm() {
     setHandEind('');
     setHandKlantId('');
     setHandOmschrijving('');
+  }
+
+  function openEditModal(u: any) {
+    setEditId(u.id);
+    setEditDatum(u.datum || vandaag());
+    setEditStart(isoNaarHHMM(u.startTijd));
+    setEditEind(isoNaarHHMM(u.eindTijd));
+    setEditKlantId(u.klantId || '');
+    setEditOmschrijving(u.omschrijving || '');
+    setEditGefactureerd(u.status === 'gefactureerd');
+    setEditModal(true);
+  }
+
+  async function editOpslaan() {
+    const startMin = parseHHMM(editStart);
+    const eindMin = parseHHMM(editEind);
+
+    if (!editDatum) { Alert.alert('Fout', 'Vul een datum in.'); return; }
+    if (startMin === null) { Alert.alert('Fout', 'Vul de starttijd in als HH:MM (bijv. 09:00).'); return; }
+    if (eindMin === null) { Alert.alert('Fout', 'Vul de eindtijd in als HH:MM (bijv. 17:30).'); return; }
+
+    let duurMinuten = eindMin - startMin;
+    if (duurMinuten <= 0) duurMinuten += 24 * 60;
+    if (duurMinuten < 1) { Alert.alert('Fout', 'Eindtijd moet na starttijd liggen.'); return; }
+
+    const klantNaam = klanten.find(k => k.id === editKlantId)?.naam || '';
+    const startDate = new Date(`${editDatum}T${editStart}:00`);
+    const eindDate = new Date(`${editDatum}T${editEind}:00`);
+
+    await bijwerken(editId, {
+      datum: editDatum,
+      klantId: editKlantId || null,
+      klantNaam,
+      omschrijving: editOmschrijving || 'Werkzaamheden',
+      startTijd: startDate.toISOString(),
+      eindTijd: eindDate.toISOString(),
+      duurMinuten,
+    });
+
+    setEditModal(false);
   }
 
   function verwijderenBevestigen(id: string) {
@@ -452,6 +511,7 @@ export default function UrenScherm() {
                   <TouchableOpacity
                     key={u.id}
                     style={s.urenKaart}
+                    onPress={() => openEditModal(u)}
                     onLongPress={() => verwijderenBevestigen(u.id)}
                     activeOpacity={0.8}>
                     <View style={[s.urenBalk, { backgroundColor: u.status === 'gefactureerd' ? '#444' : '#C9A84C' }]} />
@@ -476,9 +536,101 @@ export default function UrenScherm() {
           })
         )}
 
-        <Text style={s.tipTekst}>Houd een registratie ingedrukt om te verwijderen</Text>
+        <Text style={s.tipTekst}>Tik om te bewerken · Houd ingedrukt om te verwijderen</Text>
 
       </ScrollView>
+
+      {/* === Bewerken modal === */}
+      <Modal visible={editModal} animationType="slide" presentationStyle="pageSheet">
+        <View style={s.modalScherm}>
+          <View style={s.modalHeader}>
+            <TouchableOpacity onPress={() => setEditModal(false)}>
+              <Text style={s.modalAnnuleer}>Annuleren</Text>
+            </TouchableOpacity>
+            <Text style={s.modalTitel}>Registratie bewerken</Text>
+            <TouchableOpacity onPress={editOpslaan}>
+              <Text style={s.modalOpslaan}>Opslaan</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={s.modalInhoud}>
+            {editGefactureerd && (
+              <View style={s.gewarschuwd}>
+                <Text style={s.gewaarschuwd_tekst}>
+                  ⚠️ Deze registratie is al gefactureerd ({(uren.find((u: any) => u.id === editId) as any)?.factuurNummer}). Bewerken heeft geen invloed op de bestaande factuur.
+                </Text>
+              </View>
+            )}
+
+            <Text style={s.veldLabel}>DATUM</Text>
+            <TextInput
+              style={s.veld}
+              placeholder="JJJJ-MM-DD (bijv. 2026-06-26)"
+              placeholderTextColor="#444"
+              value={editDatum}
+              onChangeText={setEditDatum}
+              keyboardType="numbers-and-punctuation"
+            />
+
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.veldLabel}>STARTTIJD</Text>
+                <TextInput
+                  style={s.veld}
+                  placeholder="09:00"
+                  placeholderTextColor="#444"
+                  value={editStart}
+                  onChangeText={setEditStart}
+                  keyboardType="numbers-and-punctuation"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.veldLabel}>EINDTIJD</Text>
+                <TextInput
+                  style={s.veld}
+                  placeholder="17:30"
+                  placeholderTextColor="#444"
+                  value={editEind}
+                  onChangeText={setEditEind}
+                  keyboardType="numbers-and-punctuation"
+                />
+              </View>
+            </View>
+
+            {(() => {
+              const sv = parseHHMM(editStart);
+              const ev = parseHHMM(editEind);
+              if (sv === null || ev === null) return null;
+              let d = ev - sv;
+              if (d <= 0) d += 24 * 60;
+              return (
+                <View style={s.duurPreview}>
+                  <Text style={s.duurPreviewTekst}>⏱ {formateerDuur(d)}</Text>
+                </View>
+              );
+            })()}
+
+            <Text style={s.veldLabel}>KLANT (OPTIONEEL)</Text>
+            <TouchableOpacity
+              style={s.veld}
+              onPress={() => setKlantPickerVoor('edit')}>
+              <Text style={{ color: editKlantId ? '#fff' : '#444', fontSize: 15 }}>
+                {editKlantId ? (klanten.find(k => k.id === editKlantId)?.naam || 'Klant') : 'Selecteer een klant'}
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={s.veldLabel}>OMSCHRIJVING</Text>
+            <TextInput
+              style={[s.veld, { minHeight: 80, textAlignVertical: 'top' }]}
+              placeholder="Wat heeft u gedaan?"
+              placeholderTextColor="#444"
+              value={editOmschrijving}
+              onChangeText={setEditOmschrijving}
+              multiline
+            />
+          </ScrollView>
+        </View>
+      </Modal>
 
       {/* === Handmatig toevoegen modal === */}
       <Modal visible={handmatigModal} animationType="slide" presentationStyle="pageSheet">
@@ -574,6 +726,7 @@ export default function UrenScherm() {
               onPress={() => {
                 if (klantPickerVoor === 'timer') setTimerKlantId('');
                 else if (klantPickerVoor === 'handmatig') setHandKlantId('');
+                else if (klantPickerVoor === 'edit') setEditKlantId('');
                 setKlantPickerVoor(null);
               }}>
               <Text style={s.klantRijTekst}>Geen klant</Text>
@@ -585,6 +738,7 @@ export default function UrenScherm() {
                 onPress={() => {
                   if (klantPickerVoor === 'timer') setTimerKlantId(k.id);
                   else if (klantPickerVoor === 'handmatig') setHandKlantId(k.id);
+                  else if (klantPickerVoor === 'edit') setEditKlantId(k.id);
                   setKlantPickerVoor(null);
                 }}>
                 <Text style={s.klantRijTekst}>{k.naam}</Text>
@@ -775,6 +929,8 @@ const s = StyleSheet.create({
   leegOndertekst: { color: '#444', fontSize: 13, textAlign: 'center' },
 
   tipTekst: { color: '#333', fontSize: 12, textAlign: 'center', marginTop: 16 },
+  gewarschuwd: { backgroundColor: '#2a2000', borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: '#554400' },
+  gewaarschuwd_tekst: { color: '#C9A84C', fontSize: 13, lineHeight: 20 },
 
   // Modal
   modalScherm: { flex: 1, backgroundColor: '#1A1A1A' },
