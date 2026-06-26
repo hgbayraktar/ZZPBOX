@@ -243,7 +243,15 @@ export default function FacturenScherm() {
 
   function volgendFactuurNummer(isCredit: boolean): string {
     const jaar = new Date().getFullYear();
-    const volgnummer = String(facturen.length + 1).padStart(3, '0');
+    const prefix = isCredit ? 'CN' : String(jaar);
+    const buJaarFacturen = facturen.filter((f: any) => (f.datum || '').startsWith(String(jaar)));
+    const max = buJaarFacturen.reduce((m: number, f: any) => {
+      const nummerStr = f.factuurNummer || f.nummer || '';
+      const match = nummerStr.match(/(\d+)$/);
+      const n = match ? parseInt(match[1]) : 0;
+      return n > m ? n : m;
+    }, 0);
+    const volgnummer = String(max + 1).padStart(3, '0');
     return isCredit ? `CN-${jaar}-${volgnummer}` : `${jaar}-${volgnummer}`;
   }
 
