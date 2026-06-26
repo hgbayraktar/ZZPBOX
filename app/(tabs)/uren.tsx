@@ -11,13 +11,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  gebruikFacturen,
-  gebruikKlanten,
-  gebruikPakket,
-  gebruikTransacties,
-  gebruikUren,
-} from '../../hooks/gebruikData';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '../../constants/firebase';
+import { gebruikFacturen, gebruikGebruiker, gebruikKlanten, gebruikPakket, gebruikUren } from '../../hooks/gebruikData';
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Vrijgesteld'];
 
@@ -70,10 +66,10 @@ function formatDatumLang(d: string): string {
 export default function UrenScherm() {
   const router = useRouter();
   const pakket = gebruikPakket();
+  const { gebruiker } = gebruikGebruiker();
   const { klanten } = gebruikKlanten();
   const { uren, toevoegen, bijwerken, verwijderen } = gebruikUren();
   const { facturen, toevoegen: factuurToevoegen } = gebruikFacturen();
-  const { toevoegen: transactieToevoegen } = gebruikTransacties();
 
   // Timer state
   const [timerActief, setTimerActief] = useState(false);
@@ -339,16 +335,19 @@ export default function UrenScherm() {
       status: 'concept',
     });
 
-    await transactieToevoegen({
-      soort: 'inkomst',
-      omschrijving: `${nummer} — ${klant?.naam || 'Klant'}`,
-      bedrag: totaal.toFixed(2),
-      btwBedrag: btwBedrag.toFixed(2),
-      datum: nu.toISOString().split('T')[0],
-      categorie: 'Omzet diensten',
-      btw: factuurBtw,
-      factuurNummer: nummer,
-    });
+    if (gebruiker) {
+      await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'transacties'), {
+        soort: 'inkomst',
+        omschrijving: `${nummer} — ${klant?.naam || 'Klant'}`,
+        bedrag: totaal.toFixed(2),
+        btwBedrag: btwBedrag.toFixed(2),
+        datum: nu.toISOString().split('T')[0],
+        categorie: 'Omzet diensten',
+        btw: factuurBtw,
+        factuurNummer: nummer,
+        aangemaaktOp: new Date().toISOString(),
+      });
+    }
 
     for (const u of ongefactureerd) {
       await bijwerken(u.id, { status: 'gefactureerd', factuurNummer: nummer });
@@ -708,7 +707,7 @@ export default function UrenScherm() {
 
       {/* === Klant picker modal === */}
       <Modal visible={klantPickerVoor !== null} animationType="fade" transparent>
-        <TouchableOpacity style={s.overlayAchtergrond} activeOpacity={1} onPress={() => setKlantPickerVoor(null)}>
+        <TouchableOpacity style={s.klantPickerOverlay} activeOpacity={1} onPress={() => setKlantPickerVoor(null)}>
           <View style={s.klantPickerSheet}>
             <View style={s.klantPickerHeader}>
               <Text style={s.klantPickerTitel}>Klant selecteren</Text>
@@ -944,7 +943,8 @@ const s = StyleSheet.create({
   duurPreviewTekst: { color: '#4CAF50', fontSize: 15, fontWeight: '700' },
 
   // Klant picker sheet
-  klantPickerSheet: { backgroundColor: '#1A1A1A', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%', paddingHorizontal: 20, paddingBottom: 40 },
+  klantPickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  klantPickerSheet: { backgroundColor: '#1A1A1A', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%', width: '100%', paddingHorizontal: 20, paddingBottom: 40 },
   klantPickerHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#2a2a2a', marginBottom: 4 },
   klantPickerTitel: { color: '#fff', fontSize: 17, fontWeight: '700' },
 
