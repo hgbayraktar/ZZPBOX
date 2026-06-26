@@ -152,7 +152,7 @@ export default function UrenScherm() {
       return;
     }
 
-    const klantNaam = klanten.find(k => k.id === timerKlantId)?.naam || '';
+    const klantNaam = klantNaamVan(klanten.find(k => k.id === timerKlantId));
     await toevoegen({
       datum: timerStart.toISOString().split('T')[0],
       klantId: timerKlantId || null,
@@ -183,7 +183,7 @@ export default function UrenScherm() {
     if (duurMinuten <= 0) duurMinuten += 24 * 60;
     if (duurMinuten < 1) { Alert.alert('Fout', 'Eindtijd moet na starttijd liggen.'); return; }
 
-    const klantNaam = klanten.find(k => k.id === handKlantId)?.naam || '';
+    const klantNaam = klantNaamVan(klanten.find(k => k.id === handKlantId));
     const startDate = new Date(`${handDatum}T${handStart}:00`);
     const eindDate = new Date(`${handDatum}T${handEind}:00`);
 
@@ -231,7 +231,7 @@ export default function UrenScherm() {
     if (duurMinuten <= 0) duurMinuten += 24 * 60;
     if (duurMinuten < 1) { Alert.alert('Fout', 'Eindtijd moet na starttijd liggen.'); return; }
 
-    const klantNaam = klanten.find(k => k.id === editKlantId)?.naam || '';
+    const klantNaam = klantNaamVan(klanten.find(k => k.id === editKlantId));
     const startDate = new Date(`${editDatum}T${editStart}:00`);
     const eindDate = new Date(`${editDatum}T${editEind}:00`);
 
@@ -320,10 +320,10 @@ export default function UrenScherm() {
       datum: nu.toISOString().split('T')[0],
       vervaldatum: vervaldatum.toISOString().split('T')[0],
       klantId: filterKlantId,
-      klantNaam: klant?.naam || '',
-      klantAdres: klant?.adres || '',
-      klantKvk: klant?.kvk || '',
-      klantBtw: klant?.btwnummer || '',
+      klantNaam: klantNaamVan(klant),
+      klantAdres: klantAdresVan(klant),
+      klantKvk: klant?.kvkNummer || '',
+      klantBtw: klant?.btwNummer || '',
       klantEmail: klant?.email || '',
       regels: [{
         id: '1',
@@ -340,7 +340,7 @@ export default function UrenScherm() {
     if (gebruiker) {
       await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'transacties'), {
         soort: 'inkomst',
-        omschrijving: `${nummer} — ${klant?.naam || 'Klant'}`,
+        omschrijving: `${nummer} — ${klantNaamVan(klant) || 'Klant'}`,
         bedrag: totaal.toFixed(2),
         btwBedrag: btwBedrag.toFixed(2),
         datum: nu.toISOString().split('T')[0],
@@ -370,6 +370,17 @@ export default function UrenScherm() {
 
   const timerKlant = klanten.find(k => k.id === timerKlantId);
   const filterKlant = klanten.find(k => k.id === filterKlantId);
+
+  function klantNaamVan(klant: any): string {
+    return klant?.bedrijfsnaam || klant?.naam || '';
+  }
+
+  function klantAdresVan(klant: any): string {
+    if (!klant) return '';
+    const regel1 = [klant.straat, klant.huisnummer].filter(Boolean).join(' ');
+    const regel2 = [klant.postcode, klant.plaats].filter(Boolean).join(' ');
+    return [regel1, regel2].filter(Boolean).join(', ');
+  }
 
   // Inline klant picker — rendered inside parent modal to avoid nested <Modal> on iOS
   function renderKlantPickerInline(voor: 'handmatig' | 'edit') {
@@ -403,8 +414,8 @@ export default function UrenScherm() {
                   else setEditKlantId(k.id);
                   setKlantPickerVoor(null);
                 }}>
-                <Text style={s.klantRijTekst}>{k.naam}</Text>
-                {k.bedrijf ? <Text style={s.klantRijOndertekst}>{k.bedrijf}</Text> : null}
+                <Text style={s.klantRijTekst}>{klantNaamVan(k)}</Text>
+                {k.contactpersoon ? <Text style={s.klantRijOndertekst}>{k.contactpersoon}</Text> : null}
               </TouchableOpacity>
             ))}
             {klanten.length === 0 && (
@@ -456,7 +467,7 @@ export default function UrenScherm() {
                 style={s.klantKiezer}
                 onPress={() => setKlantPickerVoor('timer')}>
                 <Text style={s.klantKiezerTekst}>
-                  {timerKlant ? timerKlant.naam : '👤 Klant selecteren (optioneel)'}
+                  {timerKlant ? klantNaamVan(timerKlant) : '👤 Klant selecteren (optioneel)'}
                 </Text>
               </TouchableOpacity>
               <TextInput
@@ -475,7 +486,7 @@ export default function UrenScherm() {
             <>
               <Text style={s.timerLabel}>BEZIG MET WERKEN</Text>
               <Text style={s.timerDisplayActief}>{formateerTijd(timerSeconden)}</Text>
-              {timerKlant && <Text style={s.timerKlantNaam}>{timerKlant.naam}</Text>}
+              {timerKlant && <Text style={s.timerKlantNaam}>{klantNaamVan(timerKlant)}</Text>}
               {timerOmschrijving ? <Text style={s.timerOmschrijving}>{timerOmschrijving}</Text> : null}
               <TouchableOpacity style={s.stopKnop} onPress={stopTimer} activeOpacity={0.8}>
                 <Text style={s.stopKnopTekst}>■ Stop & Opslaan</Text>
@@ -510,7 +521,7 @@ export default function UrenScherm() {
                   style={[s.filterTab, filterKlantId === k.id && s.filterTabActief]}
                   onPress={() => setFilterKlantId(filterKlantId === k.id ? null : k.id)}>
                   <Text style={[s.filterTabTekst, filterKlantId === k.id && s.filterTabTekstActief]}>
-                    {k.naam}
+                    {klantNaamVan(k)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -522,7 +533,7 @@ export default function UrenScherm() {
         {filterKlantId && ongefactureerd.length > 0 && (
           <TouchableOpacity style={s.factuurKnop} onPress={openFactuurModal} activeOpacity={0.8}>
             <View>
-              <Text style={s.factuurKnopTitel}>📄 Factuur aanmaken voor {filterKlant?.naam}</Text>
+              <Text style={s.factuurKnopTitel}>📄 Factuur aanmaken voor {klantNaamVan(filterKlant)}</Text>
               <Text style={s.factuurKnopOndertitel}>
                 {ongefactureerd.length} registraties · {formateerDuur(totaalOngefactureerdMin)} ongefactureerd
               </Text>
@@ -659,7 +670,7 @@ export default function UrenScherm() {
               style={s.veld}
               onPress={() => setKlantPickerVoor('edit')}>
               <Text style={{ color: editKlantId ? '#fff' : '#444', fontSize: 15 }}>
-                {editKlantId ? (klanten.find(k => k.id === editKlantId)?.naam || 'Klant') : 'Selecteer een klant'}
+                {editKlantId ? (klantNaamVan(klanten.find(k => k.id === editKlantId)) || 'Klant') : 'Selecteer een klant'}
               </Text>
             </TouchableOpacity>
 
@@ -739,7 +750,7 @@ export default function UrenScherm() {
               style={s.veld}
               onPress={() => setKlantPickerVoor('handmatig')}>
               <Text style={{ color: handKlantId ? '#fff' : '#444', fontSize: 15 }}>
-                {handKlantId ? (klanten.find(k => k.id === handKlantId)?.naam || 'Klant') : 'Selecteer een klant'}
+                {handKlantId ? (klantNaamVan(klanten.find(k => k.id === handKlantId)) || 'Klant') : 'Selecteer een klant'}
               </Text>
             </TouchableOpacity>
 
@@ -787,8 +798,8 @@ export default function UrenScherm() {
                     setTimerKlantId(k.id);
                     setKlantPickerVoor(null);
                   }}>
-                  <Text style={s.klantRijTekst}>{k.naam}</Text>
-                  {k.bedrijf ? <Text style={s.klantRijOndertekst}>{k.bedrijf}</Text> : null}
+                  <Text style={s.klantRijTekst}>{klantNaamVan(k)}</Text>
+                  {k.contactpersoon ? <Text style={s.klantRijOndertekst}>{k.contactpersoon}</Text> : null}
                 </TouchableOpacity>
               ))}
               {klanten.length === 0 && (
@@ -816,7 +827,7 @@ export default function UrenScherm() {
 
           <ScrollView style={s.modalInhoud}>
             <View style={s.samenvattingKaart}>
-              <Text style={s.samenvattingKlant}>{filterKlant?.naam || 'Klant'}</Text>
+              <Text style={s.samenvattingKlant}>{klantNaamVan(filterKlant) || 'Klant'}</Text>
               <Text style={s.samenvattingUren}>
                 {formateerDuur(totaalOngefactureerdMin)} · {ongefactureerd.length} registraties
               </Text>
