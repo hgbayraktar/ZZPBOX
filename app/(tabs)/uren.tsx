@@ -989,7 +989,7 @@ const s = StyleSheet.create({
   duurPreviewTekst: { color: '#4CAF50', fontSize: 15, fontWeight: '700' },
 
   // Inline picker overlay — absolute over parent modal, geen nested <Modal>
-  inlinePickerOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  inlinePickerOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end', zIndex: 10 },
 
   // Klant picker voor timer — staat buiten een modal, dus gewone Modal is OK
   klantPickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
