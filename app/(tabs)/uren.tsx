@@ -407,10 +407,7 @@ export default function UrenScherm() {
               <Text style={s.timerDisplay}>00:00:00</Text>
               <TouchableOpacity
                 style={s.klantKiezer}
-                onPress={() => {
-                  if (pakket === 'gratis') return;
-                  setKlantPickerVoor('timer');
-                }}>
+                onPress={() => setKlantPickerVoor('timer')}>
                 <Text style={s.klantKiezerTekst}>
                   {timerKlant ? timerKlant.naam : '👤 Klant selecteren (optioneel)'}
                 </Text>
