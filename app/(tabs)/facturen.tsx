@@ -225,6 +225,7 @@ export default function FacturenScherm() {
   const [origineelFactuurNummer, setOrigineelFactuurNummer] = useState('');
 
   const [factuurNummer, setFactuurNummer] = useState('');
+  const [localMaxNummer, setLocalMaxNummer] = useState(0);
   const [klantNaam, setKlantNaam] = useState('');
   const [klantEmail, setKlantEmail] = useState('');
   const [klantAdres, setKlantAdres] = useState('');
@@ -243,14 +244,14 @@ export default function FacturenScherm() {
 
   function volgendFactuurNummer(isCredit: boolean): string {
     const jaar = new Date().getFullYear();
-    const prefix = isCredit ? 'CN' : String(jaar);
     const buJaarFacturen = facturen.filter((f: any) => (f.datum || '').startsWith(String(jaar)));
-    const max = buJaarFacturen.reduce((m: number, f: any) => {
+    const firestoreMax = buJaarFacturen.reduce((m: number, f: any) => {
       const nummerStr = f.factuurNummer || f.nummer || '';
       const match = nummerStr.match(/(\d+)$/);
       const n = match ? parseInt(match[1]) : 0;
       return n > m ? n : m;
     }, 0);
+    const max = Math.max(firestoreMax, localMaxNummer);
     const volgnummer = String(max + 1).padStart(3, '0');
     return isCredit ? `CN-${jaar}-${volgnummer}` : `${jaar}-${volgnummer}`;
   }
@@ -386,6 +387,9 @@ export default function FacturenScherm() {
         btwBedrag: totaalBtwBedrag.toFixed(2),
         factuurNummer: factuurNummer,
       });
+
+      const savedMatch = factuurNummer.match(/(\d+)$/);
+      if (savedMatch) setLocalMaxNummer(prev => Math.max(prev, parseInt(savedMatch[1])));
 
       setModalZichtbaar(false);
       Alert.alert(

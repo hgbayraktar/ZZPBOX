@@ -85,6 +85,7 @@ export default function UrenScherm() {
   const [klantPickerVoor, setKlantPickerVoor] = useState<'timer' | 'handmatig' | 'edit' | null>(null);
   const [btwPickerZichtbaar, setBtwPickerZichtbaar] = useState(false);
   const [factuurModal, setFactuurModal] = useState(false);
+  const [localMaxNummer, setLocalMaxNummer] = useState(0);
 
   // Handmatig form
   const [handDatum, setHandDatum] = useState(vandaag());
@@ -281,12 +282,13 @@ export default function UrenScherm() {
   function volgendNummer(): string {
     const jaar = new Date().getFullYear();
     const buJaarFacturen = facturen.filter((f: any) => (f.datum || '').startsWith(String(jaar)));
-    const max = buJaarFacturen.reduce((m: number, f: any) => {
+    const firestoreMax = buJaarFacturen.reduce((m: number, f: any) => {
       const nummerStr = f.factuurNummer || f.nummer || '';
       const match = nummerStr.match(/(\d+)$/);
       const n = match ? parseInt(match[1]) : 0;
       return n > m ? n : m;
     }, 0);
+    const max = Math.max(firestoreMax, localMaxNummer);
     return `${jaar}-${String(max + 1).padStart(3, '0')}`;
   }
 
@@ -358,6 +360,9 @@ export default function UrenScherm() {
     for (const u of ongefactureerd) {
       await bijwerken(u.id, { status: 'gefactureerd', factuurNummer: nummer });
     }
+
+    const savedMatch = nummer.match(/(\d+)$/);
+    if (savedMatch) setLocalMaxNummer(prev => Math.max(prev, parseInt(savedMatch[1])));
 
     setFactuurModal(false);
     Alert.alert('Factuur aangemaakt', `${nummer} staat klaar in Facturen.`, [{ text: 'OK' }]);
