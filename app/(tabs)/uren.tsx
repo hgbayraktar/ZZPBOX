@@ -707,48 +707,48 @@ export default function UrenScherm() {
       </Modal>
 
       {/* === Klant picker modal === */}
-      <Modal visible={klantPickerVoor !== null} animationType="slide" presentationStyle="pageSheet">
-        <View style={s.modalScherm}>
-          <View style={s.modalHeader}>
-            <TouchableOpacity onPress={() => setKlantPickerVoor(null)}>
-              <Text style={s.modalAnnuleer}>Annuleren</Text>
-            </TouchableOpacity>
-            <Text style={s.modalTitel}>Klant selecteren</Text>
-            <View style={{ width: 70 }} />
-          </View>
-
-          <ScrollView style={s.modalInhoud}>
-            <TouchableOpacity
-              style={s.klantRij}
-              onPress={() => {
-                if (klantPickerVoor === 'timer') setTimerKlantId('');
-                else if (klantPickerVoor === 'handmatig') setHandKlantId('');
-                else if (klantPickerVoor === 'edit') setEditKlantId('');
-                setKlantPickerVoor(null);
-              }}>
-              <Text style={s.klantRijTekst}>Geen klant</Text>
-            </TouchableOpacity>
-            {klanten.map(k => (
+      <Modal visible={klantPickerVoor !== null} animationType="fade" transparent>
+        <TouchableOpacity style={s.overlayAchtergrond} activeOpacity={1} onPress={() => setKlantPickerVoor(null)}>
+          <View style={s.klantPickerSheet}>
+            <View style={s.klantPickerHeader}>
+              <Text style={s.klantPickerTitel}>Klant selecteren</Text>
+              <TouchableOpacity onPress={() => setKlantPickerVoor(null)}>
+                <Text style={s.modalAnnuleer}>Sluiten</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
               <TouchableOpacity
-                key={k.id}
                 style={s.klantRij}
                 onPress={() => {
-                  if (klantPickerVoor === 'timer') setTimerKlantId(k.id);
-                  else if (klantPickerVoor === 'handmatig') setHandKlantId(k.id);
-                  else if (klantPickerVoor === 'edit') setEditKlantId(k.id);
+                  if (klantPickerVoor === 'timer') setTimerKlantId('');
+                  else if (klantPickerVoor === 'handmatig') setHandKlantId('');
+                  else if (klantPickerVoor === 'edit') setEditKlantId('');
                   setKlantPickerVoor(null);
                 }}>
-                <Text style={s.klantRijTekst}>{k.naam}</Text>
-                {k.bedrijf ? <Text style={s.klantRijOndertekst}>{k.bedrijf}</Text> : null}
+                <Text style={s.klantRijTekst}>Geen klant</Text>
               </TouchableOpacity>
-            ))}
-            {klanten.length === 0 && (
-              <Text style={{ color: '#555', textAlign: 'center', marginTop: 40 }}>
-                Nog geen klanten aangemaakt
-              </Text>
-            )}
-          </ScrollView>
-        </View>
+              {klanten.map(k => (
+                <TouchableOpacity
+                  key={k.id}
+                  style={s.klantRij}
+                  onPress={() => {
+                    if (klantPickerVoor === 'timer') setTimerKlantId(k.id);
+                    else if (klantPickerVoor === 'handmatig') setHandKlantId(k.id);
+                    else if (klantPickerVoor === 'edit') setEditKlantId(k.id);
+                    setKlantPickerVoor(null);
+                  }}>
+                  <Text style={s.klantRijTekst}>{k.naam}</Text>
+                  {k.bedrijf ? <Text style={s.klantRijOndertekst}>{k.bedrijf}</Text> : null}
+                </TouchableOpacity>
+              ))}
+              {klanten.length === 0 && (
+                <Text style={{ color: '#555', textAlign: 'center', marginTop: 40, marginBottom: 40 }}>
+                  Nog geen klanten aangemaakt
+                </Text>
+              )}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
       </Modal>
 
       {/* === Factuur aanmaken modal === */}
@@ -942,6 +942,11 @@ const s = StyleSheet.create({
 
   duurPreview: { backgroundColor: '#1e2a1e', borderRadius: 10, padding: 12, marginTop: 8, alignItems: 'center' },
   duurPreviewTekst: { color: '#4CAF50', fontSize: 15, fontWeight: '700' },
+
+  // Klant picker sheet
+  klantPickerSheet: { backgroundColor: '#1A1A1A', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%', paddingHorizontal: 20, paddingBottom: 40 },
+  klantPickerHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#2a2a2a', marginBottom: 4 },
+  klantPickerTitel: { color: '#fff', fontSize: 17, fontWeight: '700' },
 
   // Klant rij
   klantRij: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#2a2a2a' },
