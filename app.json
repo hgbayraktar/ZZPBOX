@@ -87,14 +87,14 @@
         "expo-build-properties",
         {
           "ios": {
-            "deploymentTarget": "15.1",
-            "useModularHeaders": true
+            "deploymentTarget": "15.1"
           }
         }
       ],
       "@react-native-google-signin/google-signin",
       "react-native-google-mobile-ads",
-      "expo-tracking-transparency"
+      "expo-tracking-transparency",
+      "./plugins/withModularHeaders"
     ],
     "experiments": {
       "typedRoutes": true
