@@ -276,7 +276,6 @@ export default function UrenScherm() {
 
   const klantenMetUren = klanten.filter(k => uren.some((u: any) => u.klantId === k.id));
 
-  // Factuurnummer
   function volgendNummer(): string {
     const max = facturen.reduce((m: number, f: any) => {
       const n = parseInt((f.nummer || '').replace('FAC', '') || '0');
@@ -358,7 +357,6 @@ export default function UrenScherm() {
     Alert.alert('Factuur aangemaakt', `${nummer} staat klaar in Facturen.`, [{ text: 'OK' }]);
   }
 
-  // Handmatig duur preview
   const handDuurPreview = (() => {
     const s = parseHHMM(handStart);
     const e = parseHHMM(handEind);
@@ -370,6 +368,53 @@ export default function UrenScherm() {
 
   const timerKlant = klanten.find(k => k.id === timerKlantId);
   const filterKlant = klanten.find(k => k.id === filterKlantId);
+
+  // Inline klant picker — rendered inside parent modal to avoid nested <Modal> on iOS
+  function renderKlantPickerInline(voor: 'handmatig' | 'edit') {
+    if (klantPickerVoor !== voor) return null;
+    return (
+      <View style={s.inlinePickerOverlay}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => setKlantPickerVoor(null)} />
+        <View style={s.klantPickerSheet}>
+          <View style={s.klantPickerHeader}>
+            <Text style={s.klantPickerTitel}>Klant selecteren</Text>
+            <TouchableOpacity onPress={() => setKlantPickerVoor(null)}>
+              <Text style={s.modalAnnuleer}>Sluiten</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView>
+            <TouchableOpacity
+              style={s.klantRij}
+              onPress={() => {
+                if (voor === 'handmatig') setHandKlantId('');
+                else setEditKlantId('');
+                setKlantPickerVoor(null);
+              }}>
+              <Text style={s.klantRijTekst}>Geen klant</Text>
+            </TouchableOpacity>
+            {klanten.map(k => (
+              <TouchableOpacity
+                key={k.id}
+                style={s.klantRij}
+                onPress={() => {
+                  if (voor === 'handmatig') setHandKlantId(k.id);
+                  else setEditKlantId(k.id);
+                  setKlantPickerVoor(null);
+                }}>
+                <Text style={s.klantRijTekst}>{k.naam}</Text>
+                {k.bedrijf ? <Text style={s.klantRijOndertekst}>{k.bedrijf}</Text> : null}
+              </TouchableOpacity>
+            ))}
+            {klanten.length === 0 && (
+              <Text style={{ color: '#555', textAlign: 'center', marginTop: 40, marginBottom: 40 }}>
+                Nog geen klanten aangemaakt
+              </Text>
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={s.scherm}>
@@ -626,6 +671,9 @@ export default function UrenScherm() {
               multiline
             />
           </ScrollView>
+
+          {/* Klant picker inline — geen nested Modal */}
+          {renderKlantPickerInline('edit')}
         </View>
       </Modal>
 
@@ -703,11 +751,14 @@ export default function UrenScherm() {
               multiline
             />
           </ScrollView>
+
+          {/* Klant picker inline — geen nested Modal */}
+          {renderKlantPickerInline('handmatig')}
         </View>
       </Modal>
 
-      {/* === Klant picker modal === */}
-      <Modal visible={klantPickerVoor !== null} animationType="fade" transparent>
+      {/* === Klant picker voor timer (geen parent modal, dus gewone Modal is OK) === */}
+      <Modal visible={klantPickerVoor === 'timer'} animationType="fade" transparent>
         <View style={s.klantPickerOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setKlantPickerVoor(null)} />
           <View style={s.klantPickerSheet}>
@@ -721,9 +772,7 @@ export default function UrenScherm() {
               <TouchableOpacity
                 style={s.klantRij}
                 onPress={() => {
-                  if (klantPickerVoor === 'timer') setTimerKlantId('');
-                  else if (klantPickerVoor === 'handmatig') setHandKlantId('');
-                  else if (klantPickerVoor === 'edit') setEditKlantId('');
+                  setTimerKlantId('');
                   setKlantPickerVoor(null);
                 }}>
                 <Text style={s.klantRijTekst}>Geen klant</Text>
@@ -733,9 +782,7 @@ export default function UrenScherm() {
                   key={k.id}
                   style={s.klantRij}
                   onPress={() => {
-                    if (klantPickerVoor === 'timer') setTimerKlantId(k.id);
-                    else if (klantPickerVoor === 'handmatig') setHandKlantId(k.id);
-                    else if (klantPickerVoor === 'edit') setEditKlantId(k.id);
+                    setTimerKlantId(k.id);
                     setKlantPickerVoor(null);
                   }}>
                   <Text style={s.klantRijTekst}>{k.naam}</Text>
@@ -766,7 +813,6 @@ export default function UrenScherm() {
           </View>
 
           <ScrollView style={s.modalInhoud}>
-            {/* Samenvatting */}
             <View style={s.samenvattingKaart}>
               <Text style={s.samenvattingKlant}>{filterKlant?.naam || 'Klant'}</Text>
               <Text style={s.samenvattingUren}>
@@ -800,7 +846,6 @@ export default function UrenScherm() {
               <Text style={{ color: '#fff', fontSize: 15 }}>{factuurBtw}</Text>
             </TouchableOpacity>
 
-            {/* Totaal berekening */}
             {factuurUurtarief ? (() => {
               const tarief = parseFloat(factuurUurtarief.replace(',', '.'));
               if (!tarief) return null;
@@ -833,23 +878,30 @@ export default function UrenScherm() {
               Na het aanmaken kunt u de factuur vinden en versturen via het Facturen scherm.
             </Text>
           </ScrollView>
-        </View>
-      </Modal>
 
-      {/* BTW picker */}
-      <Modal visible={btwPickerZichtbaar} transparent animationType="fade">
-        <TouchableOpacity style={s.overlayAchtergrond} onPress={() => setBtwPickerZichtbaar(false)}>
-          <View style={s.btwPicker}>
-            {BTW_OPTIES.map(opt => (
-              <TouchableOpacity
-                key={opt}
-                style={[s.btwOptie, factuurBtw === opt && s.btwOptieActief]}
-                onPress={() => { setFactuurBtw(opt); setBtwPickerZichtbaar(false); }}>
-                <Text style={[s.btwOptieTekst, factuurBtw === opt && s.btwOptieTekstActief]}>{opt}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </TouchableOpacity>
+          {/* BTW picker inline — geen nested Modal */}
+          {btwPickerZichtbaar && (
+            <View style={s.inlinePickerOverlay}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={() => setBtwPickerZichtbaar(false)} />
+              <View style={[s.klantPickerSheet, { paddingBottom: 20 }]}>
+                <View style={s.klantPickerHeader}>
+                  <Text style={s.klantPickerTitel}>BTW selecteren</Text>
+                  <TouchableOpacity onPress={() => setBtwPickerZichtbaar(false)}>
+                    <Text style={s.modalAnnuleer}>Sluiten</Text>
+                  </TouchableOpacity>
+                </View>
+                {BTW_OPTIES.map(opt => (
+                  <TouchableOpacity
+                    key={opt}
+                    style={[s.klantRij, factuurBtw === opt && { backgroundColor: '#1e1a0e' }]}
+                    onPress={() => { setFactuurBtw(opt); setBtwPickerZichtbaar(false); }}>
+                    <Text style={[s.klantRijTekst, factuurBtw === opt && { color: '#C9A84C', fontWeight: '700' }]}>{opt}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
       </Modal>
 
     </View>
@@ -867,7 +919,6 @@ const s = StyleSheet.create({
 
   scrollInhoud: { padding: 20, paddingBottom: 60 },
 
-  // Timer
   timerKaart: { backgroundColor: '#242424', borderRadius: 20, padding: 24, marginBottom: 16, borderWidth: 1, borderColor: '#333', alignItems: 'center', gap: 14 },
   timerKaartActief: { borderColor: '#4CAF50', backgroundColor: '#1a2a1a' },
   timerLabel: { color: '#666', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
@@ -883,11 +934,9 @@ const s = StyleSheet.create({
   stopKnop: { backgroundColor: '#f44336', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 40 },
   stopKnopTekst: { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  // Premium banner
   premiumBanner: { backgroundColor: '#1e1a0e', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#3a2e0a', alignItems: 'center' },
   premiumBannerTekst: { color: '#C9A84C', fontSize: 14, fontWeight: '600' },
 
-  // Filter
   sectieTitel: { color: '#555', fontSize: 11, fontWeight: '700', letterSpacing: 2, marginBottom: 10, marginTop: 4 },
   filterRij: { marginBottom: 16 },
   filterTab: { backgroundColor: '#242424', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, marginRight: 8, borderWidth: 1, borderColor: '#333' },
@@ -895,19 +944,16 @@ const s = StyleSheet.create({
   filterTabTekst: { color: '#888', fontSize: 13, fontWeight: '600' },
   filterTabTekstActief: { color: '#1A1A1A' },
 
-  // Factuur knop
   factuurKnop: { backgroundColor: '#1e2a1e', borderRadius: 14, padding: 18, marginBottom: 16, borderWidth: 1, borderColor: '#2a4a2a', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   factuurKnopTitel: { color: '#4CAF50', fontSize: 15, fontWeight: '700', marginBottom: 4 },
   factuurKnopOndertitel: { color: '#666', fontSize: 13 },
   factuurKnopPijl: { color: '#4CAF50', fontSize: 22, fontWeight: '300' },
 
-  // Dag groep
   dagGroep: { marginBottom: 20 },
   dagHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   dagDatum: { color: '#888', fontSize: 12, fontWeight: '600', textTransform: 'capitalize' },
   dagTotaal: { color: '#C9A84C', fontSize: 12, fontWeight: '700' },
 
-  // Uren kaart
   urenKaart: { flexDirection: 'row', backgroundColor: '#242424', borderRadius: 12, marginBottom: 8, overflow: 'hidden', borderWidth: 1, borderColor: '#2a2a2a' },
   urenBalk: { width: 4 },
   urenInhoud: { flex: 1, flexDirection: 'row', padding: 14, alignItems: 'center', gap: 12 },
@@ -920,7 +966,6 @@ const s = StyleSheet.create({
   statusTekst: { color: '#4CAF50', fontSize: 10, fontWeight: '700' },
   statusTekstGefactureerd: { color: '#555' },
 
-  // Leeg
   legeKaart: { backgroundColor: '#242424', borderRadius: 16, padding: 40, alignItems: 'center', borderWidth: 1, borderColor: '#2a2a2a', gap: 10 },
   leegIcoon: { fontSize: 40 },
   leegTekst: { color: '#666', fontSize: 15, fontWeight: '600' },
@@ -930,7 +975,6 @@ const s = StyleSheet.create({
   gewarschuwd: { backgroundColor: '#2a2000', borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: '#554400' },
   gewaarschuwd_tekst: { color: '#C9A84C', fontSize: 13, lineHeight: 20 },
 
-  // Modal
   modalScherm: { flex: 1, backgroundColor: '#1A1A1A' },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 56, borderBottomWidth: 1, borderBottomColor: '#2a2a2a' },
   modalTitel: { color: '#fff', fontSize: 17, fontWeight: '700' },
@@ -944,36 +988,28 @@ const s = StyleSheet.create({
   duurPreview: { backgroundColor: '#1e2a1e', borderRadius: 10, padding: 12, marginTop: 8, alignItems: 'center' },
   duurPreviewTekst: { color: '#4CAF50', fontSize: 15, fontWeight: '700' },
 
-  // Klant picker sheet
+  // Inline picker overlay — absolute over parent modal, geen nested <Modal>
+  inlinePickerOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+
+  // Klant picker voor timer — staat buiten een modal, dus gewone Modal is OK
   klantPickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
   klantPickerSheet: { backgroundColor: '#1A1A1A', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%', width: '100%', paddingHorizontal: 20, paddingBottom: 40 },
   klantPickerHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#2a2a2a', marginBottom: 4 },
   klantPickerTitel: { color: '#fff', fontSize: 17, fontWeight: '700' },
 
-  // Klant rij
   klantRij: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#2a2a2a' },
   klantRijTekst: { color: '#fff', fontSize: 16 },
   klantRijOndertekst: { color: '#555', fontSize: 13, marginTop: 2 },
 
-  // Samenvatting kaart
   samenvattingKaart: { backgroundColor: '#242424', borderRadius: 14, padding: 20, marginBottom: 8, borderWidth: 1, borderColor: '#333', alignItems: 'center', gap: 4 },
   samenvattingKlant: { color: '#C9A84C', fontSize: 18, fontWeight: '700' },
   samenvattingUren: { color: '#888', fontSize: 14 },
   samenvattingDecimaal: { color: '#fff', fontSize: 20, fontWeight: '800', marginTop: 4 },
 
-  // Totaal kaart
   totaalKaart: { backgroundColor: '#242424', borderRadius: 14, padding: 18, marginTop: 16, borderWidth: 1, borderColor: '#333', gap: 10 },
   totaalRij: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   totaalLabel: { color: '#888', fontSize: 14 },
   totaalWaarde: { color: '#fff', fontSize: 15, fontWeight: '600' },
 
   factuurInfoTekst: { color: '#444', fontSize: 13, textAlign: 'center', marginTop: 24, lineHeight: 20 },
-
-  // BTW picker
-  overlayAchtergrond: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
-  btwPicker: { backgroundColor: '#242424', borderRadius: 16, overflow: 'hidden', width: 200 },
-  btwOptie: { padding: 18, borderBottomWidth: 1, borderBottomColor: '#333' },
-  btwOptieActief: { backgroundColor: '#1e1a0e' },
-  btwOptieTekst: { color: '#888', fontSize: 16, textAlign: 'center' },
-  btwOptieTekstActief: { color: '#C9A84C', fontWeight: '700' },
 });
