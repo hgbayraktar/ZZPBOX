@@ -15,6 +15,7 @@ import {
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../../constants/firebase';
 import { gebruikFacturen, gebruikGebruiker, gebruikKlanten, gebruikPakket, gebruikUren } from '../../hooks/gebruikData';
+import { nieuwFactuurNummer } from '../../utils/factuurNummer';
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Vrijgesteld'];
 
@@ -85,7 +86,6 @@ export default function UrenScherm() {
   const [klantPickerVoor, setKlantPickerVoor] = useState<'timer' | 'handmatig' | 'edit' | null>(null);
   const [btwPickerZichtbaar, setBtwPickerZichtbaar] = useState(false);
   const [factuurModal, setFactuurModal] = useState(false);
-  const [localMaxNummer, setLocalMaxNummer] = useState(0);
 
   // Handmatig form
   const [handDatum, setHandDatum] = useState(vandaag());
@@ -279,19 +279,6 @@ export default function UrenScherm() {
 
   const klantenMetUren = klanten.filter(k => uren.some((u: any) => u.klantId === k.id));
 
-  function volgendNummer(): string {
-    const jaar = new Date().getFullYear();
-    const buJaarFacturen = facturen.filter((f: any) => (f.datum || '').startsWith(String(jaar)));
-    const firestoreMax = buJaarFacturen.reduce((m: number, f: any) => {
-      const nummerStr = f.factuurNummer || f.nummer || '';
-      const match = nummerStr.match(/(\d+)$/);
-      const n = match ? parseInt(match[1]) : 0;
-      return n > m ? n : m;
-    }, 0);
-    const max = Math.max(firestoreMax, localMaxNummer);
-    return `${jaar}-${String(max + 1).padStart(3, '0')}`;
-  }
-
   function openFactuurModal() {
     if (ongefactureerd.length === 0) {
       Alert.alert('Geen uren', 'Er zijn geen ongefactureerde uren voor deze klant.');
@@ -310,7 +297,8 @@ export default function UrenScherm() {
 
     const aantalUren = parseFloat((totaalOngefactureerdMin / 60).toFixed(2));
     const klant = klanten.find(k => k.id === filterKlantId);
-    const nummer = volgendNummer();
+    if (!gebruiker) return;
+    const nummer = await nieuwFactuurNummer(gebruiker.uid, false);
     const nu = new Date();
     const vervaldatum = new Date(nu.getTime() + 30 * 24 * 60 * 60 * 1000);
 
@@ -360,9 +348,6 @@ export default function UrenScherm() {
     for (const u of ongefactureerd) {
       await bijwerken(u.id, { status: 'gefactureerd', factuurNummer: nummer });
     }
-
-    const savedMatch = nummer.match(/(\d+)$/);
-    if (savedMatch) setLocalMaxNummer(prev => Math.max(prev, parseInt(savedMatch[1])));
 
     setFactuurModal(false);
     Alert.alert('Factuur aangemaakt', `${nummer} staat klaar in Facturen.`, [{ text: 'OK' }]);

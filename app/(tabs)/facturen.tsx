@@ -12,7 +12,8 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { gebruikBedrijf, gebruikFacturen, gebruikKlanten, gebruikPakket, gebruikProducten, gebruikTransacties } from '../../hooks/gebruikData';
+import { gebruikBedrijf, gebruikFacturen, gebruikGebruiker, gebruikKlanten, gebruikPakket, gebruikProducten, gebruikTransacties } from '../../hooks/gebruikData';
+import { nieuwFactuurNummer } from '../../utils/factuurNummer';
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
 
@@ -200,6 +201,7 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
 export default function FacturenScherm() {
   const router = useRouter();
   const pakket = gebruikPakket();
+  const { gebruiker } = gebruikGebruiker();
   const { facturen, laden, toevoegen, bijwerken, verwijderen } = gebruikFacturen();
   const { klanten } = gebruikKlanten();
   const { producten } = gebruikProducten();
@@ -225,7 +227,6 @@ export default function FacturenScherm() {
   const [origineelFactuurNummer, setOrigineelFactuurNummer] = useState('');
 
   const [factuurNummer, setFactuurNummer] = useState('');
-  const [localMaxNummer, setLocalMaxNummer] = useState(0);
   const [klantNaam, setKlantNaam] = useState('');
   const [klantEmail, setKlantEmail] = useState('');
   const [klantAdres, setKlantAdres] = useState('');
@@ -242,21 +243,7 @@ export default function FacturenScherm() {
   ]);
   const [notities, setNotities] = useState('');
 
-  function volgendFactuurNummer(isCredit: boolean): string {
-    const jaar = new Date().getFullYear();
-    const buJaarFacturen = facturen.filter((f: any) => (f.datum || '').startsWith(String(jaar)));
-    const firestoreMax = buJaarFacturen.reduce((m: number, f: any) => {
-      const nummerStr = f.factuurNummer || f.nummer || '';
-      const match = nummerStr.match(/(\d+)$/);
-      const n = match ? parseInt(match[1]) : 0;
-      return n > m ? n : m;
-    }, 0);
-    const max = Math.max(firestoreMax, localMaxNummer);
-    const volgnummer = String(max + 1).padStart(3, '0');
-    return isCredit ? `CN-${jaar}-${volgnummer}` : `${jaar}-${volgnummer}`;
-  }
-
-  function nieuweFactuur() {
+  async function nieuweFactuur() {
     if (pakket === 'gratis') {
       Alert.alert('Premium functie', 'Facturen aanmaken is alleen beschikbaar in Premium.', [
         { text: 'Annuleren', style: 'cancel' },
@@ -264,16 +251,18 @@ export default function FacturenScherm() {
       ]);
       return;
     }
+    if (!gebruiker) return;
     setIsCreditnota(false);
     setOrigineelFactuurNummer('');
-    setFactuurNummer(volgendFactuurNummer(false));
     setKlantNaam(''); setKlantEmail(''); setKlantAdres('');
     setKlantKvk(''); setKlantBtw(''); setNotities('');
     setRegels([{ id: '1', omschrijving: '', aantal: '1', prijs: '', btw: '21%', eenheid: 'stuk' }]);
+    const nummer = await nieuwFactuurNummer(gebruiker.uid, false);
+    setFactuurNummer(nummer);
     setModalZichtbaar(true);
   }
 
-  function nieuweCreditnota(factuur: any) {
+  async function nieuweCreditnota(factuur: any) {
     if (pakket === 'gratis') {
       Alert.alert('Premium functie', 'Creditnota aanmaken is alleen beschikbaar in Premium.', [
         { text: 'Annuleren', style: 'cancel' },
@@ -281,9 +270,9 @@ export default function FacturenScherm() {
       ]);
       return;
     }
+    if (!gebruiker) return;
     setIsCreditnota(true);
     setOrigineelFactuurNummer(factuur.factuurNummer);
-    setFactuurNummer(volgendFactuurNummer(true));
     setKlantNaam(factuur.klantNaam || '');
     setKlantEmail(factuur.klantEmail || '');
     setKlantAdres(factuur.klantAdres || '');
@@ -294,6 +283,8 @@ export default function FacturenScherm() {
       { id: '1', omschrijving: '', aantal: '1', prijs: '', btw: '21%', eenheid: 'stuk' }
     ]);
     setVoorbeeldZichtbaar(false);
+    const nummer = await nieuwFactuurNummer(gebruiker.uid, true);
+    setFactuurNummer(nummer);
     setModalZichtbaar(true);
   }
 
@@ -387,9 +378,6 @@ export default function FacturenScherm() {
         btwBedrag: totaalBtwBedrag.toFixed(2),
         factuurNummer: factuurNummer,
       });
-
-      const savedMatch = factuurNummer.match(/(\d+)$/);
-      if (savedMatch) setLocalMaxNummer(prev => Math.max(prev, parseInt(savedMatch[1])));
 
       setModalZichtbaar(false);
       Alert.alert(
