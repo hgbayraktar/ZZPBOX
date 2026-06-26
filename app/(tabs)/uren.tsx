@@ -280,7 +280,8 @@ export default function UrenScherm() {
 
   function volgendNummer(): string {
     const max = facturen.reduce((m: number, f: any) => {
-      const n = parseInt((f.nummer || '').replace('FAC', '') || '0');
+      const nr = f.factuurNummer || f.nummer || '';
+      const n = parseInt(nr.replace('FAC', '') || '0');
       return n > m ? n : m;
     }, 0);
     return `FAC${String(max + 1).padStart(4, '0')}`;
@@ -315,7 +316,7 @@ export default function UrenScherm() {
     const totaal = subtotaal + btwBedrag;
 
     await factuurToevoegen({
-      nummer,
+      factuurNummer: nummer,
       soort: 'factuur',
       datum: nu.toISOString().split('T')[0],
       vervaldatum: vervaldatum.toISOString().split('T')[0],
