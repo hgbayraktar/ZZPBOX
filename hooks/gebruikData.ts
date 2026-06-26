@@ -373,6 +373,45 @@ export function gebruikOffertes() {
   return { offertes, laden, toevoegen, bijwerken, verwijderen };
 }
 
+export function gebruikUren() {
+  const { gebruiker } = gebruikGebruiker();
+  const [uren, setUren] = useState<any[]>([]);
+  const [laden, setLaden] = useState(true);
+
+  useEffect(() => {
+    if (!gebruiker) return;
+    const afmelden = onSnapshot(
+      collection(db, 'gebruikers', gebruiker.uid, 'uren'),
+      (snap) => {
+        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setUren(gegevens);
+        setLaden(false);
+      }
+    );
+    return afmelden;
+  }, [gebruiker]);
+
+  async function toevoegen(registratie: any) {
+    if (!gebruiker) return;
+    await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'uren'), {
+      ...registratie,
+      aangemaaktOp: new Date().toISOString(),
+    });
+  }
+
+  async function bijwerken(id: string, gegevens: any) {
+    if (!gebruiker) return;
+    await updateDoc(doc(db, 'gebruikers', gebruiker.uid, 'uren', id), gegevens);
+  }
+
+  async function verwijderen(id: string) {
+    if (!gebruiker) return;
+    await deleteDoc(doc(db, 'gebruikers', gebruiker.uid, 'uren', id));
+  }
+
+  return { uren, laden, toevoegen, bijwerken, verwijderen };
+}
+
 export function gebruikBedrijf() {
   const { gebruiker } = gebruikGebruiker();
   const [bedrijf, setBedrijf] = useState<any>({});

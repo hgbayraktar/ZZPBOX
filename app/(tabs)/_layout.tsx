@@ -9,6 +9,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="producten" />
       <Tabs.Screen name="facturen" />
       <Tabs.Screen name="offertes" />
+      <Tabs.Screen name="uren" />
       <Tabs.Screen name="rapportage" />
       <Tabs.Screen name="mijnbedrijf" />
       <Tabs.Screen name="instellingen" />

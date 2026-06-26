@@ -152,13 +152,23 @@ export default function DashboardScherm() {
             <Text style={stijlen.actieTekst}>Rapport{'\n'}bekijken</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[stijlen.actieKaart, pakket === 'gratis' && stijlen.actieKaartGesloten, { width: '100%' }]}
+            style={[stijlen.actieKaart, pakket === 'gratis' && stijlen.actieKaartGesloten]}
             onPress={() => pakket === 'premium'
               ? router.push('/(tabs)/offertes' as any)
               : router.push('/(tabs)/abonnement')}
             activeOpacity={0.8}>
             <Text style={stijlen.actieIcoon}>📋</Text>
-            <Text style={stijlen.actieTekst}>Offerte aanmaken</Text>
+            <Text style={stijlen.actieTekst}>Offerte{'\n'}aanmaken</Text>
+            {pakket === 'gratis' && <Text style={stijlen.slotIcoon}>🔒</Text>}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[stijlen.actieKaart, pakket === 'gratis' && stijlen.actieKaartGesloten]}
+            onPress={() => pakket === 'premium'
+              ? router.push('/(tabs)/uren' as any)
+              : router.push('/(tabs)/abonnement')}
+            activeOpacity={0.8}>
+            <Text style={stijlen.actieIcoon}>⏱️</Text>
+            <Text style={stijlen.actieTekst}>Uren{'\n'}registreren</Text>
             {pakket === 'gratis' && <Text style={stijlen.slotIcoon}>🔒</Text>}
           </TouchableOpacity>
         </View>
@@ -255,6 +265,14 @@ export default function DashboardScherm() {
             : router.push('/(tabs)/abonnement')}>
           <Text style={stijlen.navigatieIcoon}>📋</Text>
           <Text style={stijlen.navigatieLabel}>Offertes</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={stijlen.navigatieItem}
+          onPress={() => pakket === 'premium'
+            ? router.push('/(tabs)/uren' as any)
+            : router.push('/(tabs)/abonnement')}>
+          <Text style={stijlen.navigatieIcoon}>⏱️</Text>
+          <Text style={stijlen.navigatieLabel}>Uren</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={stijlen.navigatieItem}
