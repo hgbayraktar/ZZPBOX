@@ -280,8 +280,14 @@ export default function UrenScherm() {
 
   function volgendNummer(): string {
     const jaar = new Date().getFullYear();
-    const volgnummer = String(facturen.length + 1).padStart(3, '0');
-    return `${jaar}-${volgnummer}`;
+    const buJaarFacturen = facturen.filter((f: any) => (f.datum || '').startsWith(String(jaar)));
+    const max = buJaarFacturen.reduce((m: number, f: any) => {
+      const nummerStr = f.factuurNummer || f.nummer || '';
+      const match = nummerStr.match(/(\d+)$/);
+      const n = match ? parseInt(match[1]) : 0;
+      return n > m ? n : m;
+    }, 0);
+    return `${jaar}-${String(max + 1).padStart(3, '0')}`;
   }
 
   function openFactuurModal() {
