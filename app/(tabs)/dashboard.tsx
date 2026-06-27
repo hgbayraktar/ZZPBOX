@@ -10,6 +10,7 @@ import {
   View
 } from 'react-native';
 import { gebruikGebruiker, gebruikPakket, gebruikTransacties } from '../../hooks/gebruikData';
+import { isoNaarNl } from '../../utils/datum';
 
 const IOS_BANNER_ID = 'ca-app-pub-1924459116813725/1234639356';
 const ANDROID_BANNER_ID = 'ca-app-pub-1924459116813725/6431125719';
@@ -191,7 +192,7 @@ export default function DashboardScherm() {
               <View style={stijlen.transactieInhoud}>
                 <View style={{ flex: 1 }}>
                   <Text style={stijlen.transactieOmschrijving}>{t.omschrijving}</Text>
-                  <Text style={stijlen.transactieMeta}>{t.datum} · {t.categorie || 'Geen categorie'}</Text>
+                  <Text style={stijlen.transactieMeta}>{isoNaarNl(t.datum)} · {t.categorie || 'Geen categorie'}</Text>
                 </View>
                 <Text style={[stijlen.transactieBedrag, {
                   color: t.soort === 'inkomst' ? '#4CAF50' : '#f44336'

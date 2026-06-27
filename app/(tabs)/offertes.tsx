@@ -2,8 +2,6 @@ import * as Print from 'expo-print';
 import { useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../../constants/firebase';
 import {
   ActivityIndicator,
   Alert,
@@ -26,7 +24,7 @@ import {
   gebruikProducten,
   gebruikTransacties,
 } from '../../hooks/gebruikData';
-import { nieuwFactuurNummer, nieuwOfferteNummer } from '../../utils/factuurNummer';
+import { nieuwFactuurNummer, nieuwOfferteNummer, setOfferteStartNummer } from '../../utils/factuurNummer';
 import { isoNaarNl, nlNaarIso, vandaagIso, vandaagNl, vandaagPlusDagen } from '../../utils/datum';
 import type { OfferteRegel } from '../../types';
 
@@ -170,7 +168,7 @@ function offerteHtml(offerte: any, bedrijf: any): string {
         <div class="geldigheid">
           <div class="geldigheid-titel">GELDIGHEID</div>
           <div class="geldigheid-info">
-            Deze offerte is geldig tot <strong>${offerte.geldigTot}</strong>.<br>
+            Deze offerte is geldig tot <strong>${isoNaarNl(offerte.geldigTot)}</strong>.<br>
             Bij akkoord kunt u contact opnemen via ${escHtml(bedrijf.email) || 'ons e-mailadres'}.
           </div>
         </div>
@@ -251,7 +249,7 @@ export default function OffertesScherm() {
     }
     if (!gebruiker) return;
     try {
-      await setDoc(doc(db, 'gebruikers', gebruiker.uid, 'tellers', 'offertes'), { laatsteNummer: num - 1 });
+      await setOfferteStartNummer(gebruiker.uid, num);
       setNummerModalZichtbaar(false);
       Alert.alert('Ingesteld', `Volgende offerte begint bij OFR${String(num).padStart(4, '0')}.`);
     } catch {

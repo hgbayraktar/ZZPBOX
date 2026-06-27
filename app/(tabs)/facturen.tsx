@@ -178,7 +178,7 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
             IBAN: <strong>${bedrijf.iban}</strong><br>
             ${bedrijf.banknaam ? 'Bank: ' + bedrijf.banknaam + '<br>' : ''}
             Onder vermelding van: <strong>${factuur.factuurNummer}</strong><br>
-            Uiterlijk voor: <strong>${factuur.vervaldatum}</strong>
+            Uiterlijk voor: <strong>${isoNaarNl(factuur.vervaldatum)}</strong>
           </div>
         </div>` : ''}
         ${factuur.notities ? `
@@ -285,7 +285,9 @@ export default function FacturenScherm() {
   function klantSelecteren(klant: any) {
     setKlantNaam(klant.bedrijfsnaam || klant.contactpersoon || '');
     setKlantEmail(klant.email || '');
-    setKlantAdres(`${klant.straat || ''} ${klant.huisnummer || ''}, ${klant.postcode || ''} ${klant.plaats || ''}`.trim());
+    const regel1 = [klant.straat, klant.huisnummer].filter(Boolean).join(' ');
+    const regel2 = [klant.postcode, klant.plaats].filter(Boolean).join(' ');
+    setKlantAdres([regel1, regel2].filter(Boolean).join(', '));
     setKlantKvk(klant.kvkNummer || '');
     setKlantBtw(klant.btwNummer || '');
     setKlantModalZichtbaar(false);
@@ -367,7 +369,7 @@ export default function FacturenScherm() {
         bedrag: totaal.toFixed(2),
         soort: isCreditnota ? 'uitgave' : 'inkomst',
         categorie: isCreditnota ? 'Overige kosten' : 'Omzet diensten',
-        datum: datum,
+        datum: nlNaarIso(datum),
         btwTarief: btwTarief,
         btwBedrag: totaalBtwBedrag.toFixed(2),
         factuurNummer: factuurNummer,
@@ -768,7 +770,7 @@ export default function FacturenScherm() {
 
                   {/* Factuurlijst per klant */}
                   {debiteur.facturen
-                    .sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp))
+                    .sort((a, b) => (b.aangemaaktOp || '').localeCompare(a.aangemaaktOp || ''))
                     .map(f => (
                       <TouchableOpacity
                         key={f.id}

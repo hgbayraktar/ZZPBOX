@@ -357,7 +357,7 @@ export function gebruikOffertes() {
     return afmelden;
   }, [gebruiker]);
 
-  async function toevoegen(offerte: Omit<Offerte, 'id'>) {
+  async function toevoegen(offerte: Omit<Offerte, 'id' | 'aangemaaktOp'>) {
     if (!gebruiker) return;
     await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'offertes'), {
       ...offerte,

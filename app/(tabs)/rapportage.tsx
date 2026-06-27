@@ -237,14 +237,16 @@ export default function RapportageScherm() {
 
   function filterTransacties() {
     return transacties.filter(t => {
-      if (!t.aangemaaktOp) return false;
-      const datum = new Date(t.aangemaaktOp);
-      if (periodeType === 'jaar') return datum.getFullYear() === jaar;
+      if (!t.datum) return false;
+      const [jaarStr, maandStr] = t.datum.split('-');
+      const datumJaar = parseInt(jaarStr);
+      const datumMaand = parseInt(maandStr) - 1;
+      if (periodeType === 'jaar') return datumJaar === jaar;
       if (periodeType === 'kwartaal') {
         const maanden = [[0,1,2],[3,4,5],[6,7,8],[9,10,11]][geselecteerdKwartaal];
-        return datum.getFullYear() === jaar && maanden.includes(datum.getMonth());
+        return datumJaar === jaar && maanden.includes(datumMaand);
       }
-      return datum.getFullYear() === jaar && datum.getMonth() === geselecteerdeMaand;
+      return datumJaar === jaar && datumMaand === geselecteerdeMaand;
     });
   }
 
