@@ -17,12 +17,14 @@ import {
 import {
   gebruikBedrijf,
   gebruikFacturen,
+  gebruikGebruiker,
   gebruikKlanten,
   gebruikOffertes,
   gebruikPakket,
   gebruikProducten,
   gebruikTransacties,
 } from '../../hooks/gebruikData';
+import { nieuwFactuurNummer } from '../../utils/factuurNummer';
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
 
@@ -192,6 +194,7 @@ export default function OffertesScherm() {
   const router = useRouter();
   const pakket = gebruikPakket();
   const { offertes, laden, toevoegen, bijwerken, verwijderen } = gebruikOffertes();
+  const { gebruiker } = gebruikGebruiker();
   const { facturen, toevoegen: factuurToevoegen } = gebruikFacturen();
   const { klanten } = gebruikKlanten();
   const { producten } = gebruikProducten();
@@ -233,12 +236,6 @@ export default function OffertesScherm() {
       .filter(n => n > 0);
     const max = nummers.length > 0 ? Math.max(...nummers) : 0;
     return `OFR${String(max + 1).padStart(4, '0')}`;
-  }
-
-  function volgendFactuurNummer(): string {
-    const jaar = new Date().getFullYear();
-    const volgnummer = String(facturen.length + 1).padStart(3, '0');
-    return `${jaar}-${volgnummer}`;
   }
 
   function nieuweOfferte() {
@@ -347,7 +344,8 @@ export default function OffertesScherm() {
         {
           text: 'Omzetten', onPress: async () => {
             try {
-              const nieuwFactuurNummer = volgendFactuurNummer();
+              if (!gebruiker) return;
+              const factuurNr = await nieuwFactuurNummer(gebruiker.uid, false);
               const vandaag = new Date().toLocaleDateString('nl-NL');
               const verval = new Date(); verval.setDate(verval.getDate() + 30);
               const vervaldatum = verval.toLocaleDateString('nl-NL');
@@ -355,7 +353,7 @@ export default function OffertesScherm() {
               const regelsVoorFactuur = offerte.regels?.map((r: OfferteRegel) => ({ ...r, id: Date.now().toString() + r.id })) || [];
 
               await factuurToevoegen({
-                factuurNummer: nieuwFactuurNummer,
+                factuurNummer: factuurNr,
                 klantNaam: offerte.klantNaam,
                 klantEmail: offerte.klantEmail,
                 klantAdres: offerte.klantAdres,
@@ -378,19 +376,19 @@ export default function OffertesScherm() {
               const totaalBedrag = regelsVoorFactuur.reduce((s: number, r: OfferteRegel) => s + parseFloat(r.aantal || '0') * parseFloat(r.prijs?.replace(',', '.') || '0'), 0) + totaalBtwBedrag;
 
               await transactieToevoegen({
-                omschrijving: `Factuur ${nieuwFactuurNummer} — ${offerte.klantNaam}`,
+                omschrijving: `Factuur ${factuurNr} — ${offerte.klantNaam}`,
                 bedrag: totaalBedrag.toFixed(2),
                 soort: 'inkomst',
                 categorie: 'Omzet diensten',
                 datum: vandaag,
                 btwTarief: btw21 > 0 ? '21%' : btw9 > 0 ? '9%' : '0%',
                 btwBedrag: totaalBtwBedrag.toFixed(2),
-                factuurNummer: nieuwFactuurNummer,
+                factuurNummer: factuurNr,
               });
 
               await bijwerken(offerte.id, { status: 'geaccepteerd' });
               setVoorbeeldZichtbaar(false);
-              Alert.alert('✅ Gelukt!', `Factuur ${nieuwFactuurNummer} is aangemaakt. U vindt deze in het facturen overzicht.`);
+              Alert.alert('✅ Gelukt!', `Factuur ${factuurNr} is aangemaakt. U vindt deze in het facturen overzicht.`);
             } catch {
               Alert.alert('Fout', 'Kon offerte niet omzetten. Probeer opnieuw.');
             }
@@ -667,7 +665,7 @@ export default function OffertesScherm() {
                 </View>
               ) : null}
 
-              {geselecteerdeOfferte.status !== 'geaccepteerd' && (
+              {geselecteerdeOfferte.status !== 'verlopen' && (
                 <TouchableOpacity style={stijlen.omzettenKnop} onPress={() => omzettenNaarFactuur(geselecteerdeOfferte)} activeOpacity={0.8}>
                   <Text style={stijlen.omzettenKnopTekst}>✓ Omzetten naar factuur</Text>
                 </TouchableOpacity>
