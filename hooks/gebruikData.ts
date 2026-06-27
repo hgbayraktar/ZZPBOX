@@ -2,7 +2,7 @@ import { addDoc, collection, deleteDoc, doc, onSnapshot, setDoc, updateDoc, writ
 import { useEffect, useRef, useState } from 'react';
 import { db } from '../constants/firebase';
 import { useAuth } from './AuthContext';
-import type { Bedrijf, Factuur, Klant, Offerte, Transactie, UrenRegistratie } from '../types';
+import type { Bedrijf, Categorie, Factuur, Klant, Offerte, Product, Transactie, UrenRegistratie } from '../types';
 
 const STANDAARD_CATEGORIEEN = [
   // INKOMSTEN
@@ -90,7 +90,7 @@ export function gebruikPakket() {
 
 export function gebruikCategorieën() {
   const { gebruiker } = gebruikGebruiker();
-  const [categorieën, setCategorieën] = useState<any[]>([]);
+  const [categorieën, setCategorieën] = useState<Categorie[]>([]);
   const [laden, setLaden] = useState(true);
   const geïnitialiseerd = useRef(false);
 
@@ -107,7 +107,7 @@ export function gebruikCategorieën() {
             setLaden(false);
           }
         } else {
-          const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Categorie[];
           setCategorieën(gegevens);
           setLaden(false);
         }
@@ -147,7 +147,7 @@ export function gebruikCategorieën() {
     await batch.commit();
   }
 
-  async function toevoegen(categorie: any) {
+  async function toevoegen(categorie: Omit<Categorie, 'id' | 'aangemaaktOp'>) {
     if (!gebruiker) return;
     await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'categorieën'), {
       ...categorie,
@@ -155,7 +155,7 @@ export function gebruikCategorieën() {
     });
   }
 
-  async function bijwerken(id: string, gegevens: any) {
+  async function bijwerken(id: string, gegevens: Partial<Categorie>) {
     if (!gebruiker) return;
     await updateDoc(doc(db, 'gebruikers', gebruiker.uid, 'categorieën', id), gegevens);
   }
@@ -171,12 +171,12 @@ export function gebruikCategorieën() {
 
   const hoofdCategorieën = categorieën
     .filter(c => !c.bovenliggend)
-    .sort((a, b) => a.volgorde - b.volgorde);
+    .sort((a, b) => (a.volgorde ?? 0) - (b.volgorde ?? 0));
 
   function subCategorieën(hoofdId: string) {
     return categorieën
       .filter(c => c.bovenliggend === hoofdId)
-      .sort((a, b) => a.volgorde - b.volgorde);
+      .sort((a, b) => (a.volgorde ?? 0) - (b.volgorde ?? 0));
   }
 
   function alleNamen(soort: 'inkomst' | 'uitgave'): string[] {
@@ -263,7 +263,7 @@ export function gebruikKlanten() {
 
 export function gebruikProducten() {
   const { gebruiker } = gebruikGebruiker();
-  const [producten, setProducten] = useState<any[]>([]);
+  const [producten, setProducten] = useState<Product[]>([]);
   const [laden, setLaden] = useState(true);
 
   useEffect(() => {
@@ -271,7 +271,7 @@ export function gebruikProducten() {
     const afmelden = onSnapshot(
       collection(db, 'gebruikers', gebruiker.uid, 'producten'),
       (snap) => {
-        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Product[];
         setProducten(gegevens);
         setLaden(false);
       }
@@ -279,7 +279,7 @@ export function gebruikProducten() {
     return afmelden;
   }, [gebruiker]);
 
-  async function toevoegen(product: any) {
+  async function toevoegen(product: Omit<Product, 'id' | 'aangemaaktOp'>) {
     if (!gebruiker) return;
     await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'producten'), {
       ...product,
@@ -287,7 +287,7 @@ export function gebruikProducten() {
     });
   }
 
-  async function bijwerken(id: string, product: any) {
+  async function bijwerken(id: string, product: Partial<Product>) {
     if (!gebruiker) return;
     await updateDoc(doc(db, 'gebruikers', gebruiker.uid, 'producten', id), product);
   }

@@ -388,9 +388,13 @@ export default function FacturenScherm() {
   }
 
   async function statusBijwerken(id: string, nieuwStatus: Factuur['status']) {
-    await bijwerken(id, { status: nieuwStatus });
-    if (geselecteerdeFactuur?.id === id) {
-      setGeselecteerdeFactuur({ ...geselecteerdeFactuur, status: nieuwStatus });
+    try {
+      await bijwerken(id, { status: nieuwStatus });
+      if (geselecteerdeFactuur?.id === id) {
+        setGeselecteerdeFactuur({ ...geselecteerdeFactuur, status: nieuwStatus });
+      }
+    } catch {
+      Alert.alert('Fout', 'Status kon niet worden bijgewerkt. Probeer opnieuw.');
     }
   }
 

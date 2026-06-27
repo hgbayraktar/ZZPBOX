@@ -30,6 +30,10 @@ import { nieuwFactuurNummer, nieuwOfferteNummer } from '../../utils/factuurNumme
 import { isoNaarNl, nlNaarIso, vandaagIso, vandaagNl, vandaagPlusDagen } from '../../utils/datum';
 import type { OfferteRegel } from '../../types';
 
+function escHtml(s: string | null | undefined): string {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
 
 function offerteHtml(offerte: any, bedrijf: any): string {
@@ -111,16 +115,16 @@ function offerteHtml(offerte: any, bedrijf: any): string {
       <div class="pagina">
         <div class="header">
           <div>
-            <div class="bedrijf-naam">${bedrijf.bedrijfsnaam || 'Bedrijfsnaam'}</div>
+            <div class="bedrijf-naam">${escHtml(bedrijf.bedrijfsnaam) || 'Bedrijfsnaam'}</div>
             <div class="bedrijf-info">
-              ${bedrijf.naamEigenaar ? bedrijf.naamEigenaar + '<br>' : ''}
-              ${bedrijf.straat ? bedrijf.straat + ' ' + (bedrijf.huisnummer || '') + '<br>' : ''}
-              ${bedrijf.postcode ? bedrijf.postcode + ' ' + (bedrijf.plaats || '') + '<br>' : ''}
-              ${bedrijf.kvkNummer ? 'KvK: ' + bedrijf.kvkNummer + '<br>' : ''}
-              ${bedrijf.btwNummer ? 'BTW: ' + bedrijf.btwNummer + '<br>' : ''}
-              ${bedrijf.email ? bedrijf.email + '<br>' : ''}
-              ${bedrijf.telefoon ? bedrijf.telefoon + '<br>' : ''}
-              ${bedrijf.website ? bedrijf.website : ''}
+              ${bedrijf.naamEigenaar ? escHtml(bedrijf.naamEigenaar) + '<br>' : ''}
+              ${bedrijf.straat ? escHtml(bedrijf.straat) + ' ' + escHtml(bedrijf.huisnummer) + '<br>' : ''}
+              ${bedrijf.postcode ? escHtml(bedrijf.postcode) + ' ' + escHtml(bedrijf.plaats) + '<br>' : ''}
+              ${bedrijf.kvkNummer ? 'KvK: ' + escHtml(bedrijf.kvkNummer) + '<br>' : ''}
+              ${bedrijf.btwNummer ? 'BTW: ' + escHtml(bedrijf.btwNummer) + '<br>' : ''}
+              ${bedrijf.email ? escHtml(bedrijf.email) + '<br>' : ''}
+              ${bedrijf.telefoon ? escHtml(bedrijf.telefoon) + '<br>' : ''}
+              ${bedrijf.website ? escHtml(bedrijf.website) : ''}
             </div>
           </div>
           <div class="offerte-blok">

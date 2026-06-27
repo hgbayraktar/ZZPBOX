@@ -67,7 +67,7 @@ export default function CategorieënScherm() {
         soort: nieuwSoort,
         icoon: nieuwIcoon,
         kleur: nieuwSoort === 'inkomst' ? '#4CAF50' : '#FF6B00',
-        bovenliggend: bovenliggendId,
+        bovenliggend: bovenliggendId ?? undefined,
         volgorde: 99,
       });
       setModalZichtbaar(false);

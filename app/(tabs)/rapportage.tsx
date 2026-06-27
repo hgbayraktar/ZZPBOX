@@ -12,6 +12,11 @@ import {
   View
 } from 'react-native';
 import { gebruikBedrijf, gebruikPakket, gebruikTransacties } from '../../hooks/gebruikData';
+import { isoNaarNl } from '../../utils/datum';
+
+function escHtml(s: string | null | undefined): string {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 type PeriodeSoort = 'jaar' | 'kwartaal' | 'maand';
 
@@ -62,13 +67,13 @@ function rapportHtml(
   `).join('');
 
   const transactieRijen = [...transacties]
-    .sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp))
+    .sort((a, b) => (b.aangemaaktOp || '').localeCompare(a.aangemaaktOp || ''))
     .map(t => `
       <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${t.datum}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${t.omschrijving}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${t.categorie || '-'}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${t.btwTarief}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${isoNaarNl(t.datum)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${escHtml(t.omschrijving)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${escHtml(t.categorie) || '-'}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${escHtml(t.btwTarief)}</td>
         <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; text-align: right; font-size: 11px; color: ${t.soort === 'inkomst' ? '#4CAF50' : '#f44336'}; font-weight: 600;">
           ${t.soort === 'inkomst' ? '+' : '-'}${euro(parseFloat(t.bedrag))}
         </td>
@@ -120,11 +125,11 @@ function rapportHtml(
       <div class="pagina">
         <div class="header">
           <div>
-            <div class="bedrijf-naam">${bedrijf.bedrijfsnaam || 'Bedrijfsnaam'}</div>
+            <div class="bedrijf-naam">${escHtml(bedrijf.bedrijfsnaam) || 'Bedrijfsnaam'}</div>
             <div class="bedrijf-info">
-              ${bedrijf.kvkNummer ? 'KvK: ' + bedrijf.kvkNummer + '<br>' : ''}
-              ${bedrijf.btwNummer ? 'BTW: ' + bedrijf.btwNummer + '<br>' : ''}
-              ${bedrijf.email || ''}
+              ${bedrijf.kvkNummer ? 'KvK: ' + escHtml(bedrijf.kvkNummer) + '<br>' : ''}
+              ${bedrijf.btwNummer ? 'BTW: ' + escHtml(bedrijf.btwNummer) + '<br>' : ''}
+              ${escHtml(bedrijf.email)}
             </div>
           </div>
           <div class="rapport-blok">

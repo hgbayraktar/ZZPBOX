@@ -13,6 +13,11 @@ import {
     View
 } from 'react-native';
 import { gebruikCategorieën, gebruikGebruiker, gebruikPakket, gebruikTransacties } from '../../hooks/gebruikData';
+import { isoNaarNl } from '../../utils/datum';
+
+function escHtml(s: string | null | undefined): string {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
 
@@ -108,7 +113,7 @@ export default function TransactiesScherm() {
         btwTarief: btw,
         btwBedrag: berekenBtw(b, btw).toString(),
         categorie,
-        datum: new Date().toLocaleDateString('nl-NL'),
+        datum: new Date().toISOString().split('T')[0],
       });
       setModalZichtbaar(false);
     } catch (e) {
@@ -162,10 +167,10 @@ export default function TransactiesScherm() {
 
     const rijen = gefilterd.map(t => `
       <tr>
-        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${t.datum}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${t.omschrijving}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${t.categorie || '-'}</td>
-        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${t.btwTarief}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${isoNaarNl(t.datum)}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${escHtml(t.omschrijving)}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${escHtml(t.categorie) || '-'}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${escHtml(t.btwTarief)}</td>
         <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:right;color:${t.soort === 'inkomst' ? '#4CAF50' : '#f44336'};">
           ${t.soort === 'inkomst' ? '+' : '-'}${euro(parseFloat(t.bedrag))}
         </td>
@@ -307,7 +312,7 @@ export default function TransactiesScherm() {
                   <View style={stijlen.transactieInhoud}>
                     <View style={{ flex: 1 }}>
                       <Text style={stijlen.transactieOmschrijving}>{t.omschrijving}</Text>
-                      <Text style={stijlen.transactieMeta}>{t.datum} · {t.categorie || 'Geen categorie'} · BTW {t.btwTarief}</Text>
+                      <Text style={stijlen.transactieMeta}>{isoNaarNl(t.datum)} · {t.categorie || 'Geen categorie'} · BTW {t.btwTarief}</Text>
                     </View>
                     <View style={stijlen.transactieRechts}>
                       <Text style={[stijlen.transactieBedrag, { color: t.soort === 'inkomst' ? '#4CAF50' : '#f44336' }]}>

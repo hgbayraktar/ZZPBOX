@@ -90,6 +90,27 @@ export interface Transactie {
   aangemaaktOp?: string;
 }
 
+export interface Categorie {
+  id: string;
+  naam: string;
+  soort: 'inkomst' | 'uitgave';
+  icoon?: string;
+  kleur?: string;
+  bovenliggend?: string;
+  volgorde?: number;
+  aangemaaktOp?: string;
+}
+
+export interface Product {
+  id: string;
+  naam: string;
+  prijs: string;
+  btw: string;
+  eenheid: string;
+  omschrijving?: string;
+  aangemaaktOp?: string;
+}
+
 export interface Bedrijf {
   bedrijfsnaam?: string;
   naamEigenaar?: string;
