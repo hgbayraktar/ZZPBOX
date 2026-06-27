@@ -57,7 +57,7 @@ function offerteHtml(offerte: any, bedrijf: any): string {
   const regelsHtml = offerte.regels?.map((r: OfferteRegel) => `
     <tr>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0;">
-        <div style="font-weight: 600; color: #1a1a1a;">${r.omschrijving}</div>
+        <div style="font-weight: 600; color: #1a1a1a;">${escHtml(r.omschrijving)}</div>
         <div style="font-size: 11px; color: #888; margin-top: 2px;">BTW ${r.btw} — per ${r.eenheid}</div>
       </td>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #555;">${r.aantal}</td>
@@ -143,12 +143,12 @@ function offerteHtml(offerte: any, bedrijf: any): string {
         </div>
         <div class="klant-sectie">
           <div class="klant-label">OFFERTE VOOR</div>
-          <div class="klant-naam">${offerte.klantNaam}</div>
+          <div class="klant-naam">${escHtml(offerte.klantNaam)}</div>
           <div class="klant-info">
-            ${offerte.klantAdres ? offerte.klantAdres + '<br>' : ''}
-            ${offerte.klantEmail ? offerte.klantEmail + '<br>' : ''}
-            ${offerte.klantKvk ? 'KvK: ' + offerte.klantKvk + '<br>' : ''}
-            ${offerte.klantBtw ? 'BTW: ' + offerte.klantBtw : ''}
+            ${offerte.klantAdres ? escHtml(offerte.klantAdres) + '<br>' : ''}
+            ${offerte.klantEmail ? escHtml(offerte.klantEmail) + '<br>' : ''}
+            ${offerte.klantKvk ? 'KvK: ' + escHtml(offerte.klantKvk) + '<br>' : ''}
+            ${offerte.klantBtw ? 'BTW: ' + escHtml(offerte.klantBtw) : ''}
           </div>
         </div>
         <table>
@@ -171,16 +171,16 @@ function offerteHtml(offerte: any, bedrijf: any): string {
           <div class="geldigheid-titel">GELDIGHEID</div>
           <div class="geldigheid-info">
             Deze offerte is geldig tot <strong>${offerte.geldigTot}</strong>.<br>
-            Bij akkoord kunt u contact opnemen via ${bedrijf.email || 'ons e-mailadres'}.
+            Bij akkoord kunt u contact opnemen via ${escHtml(bedrijf.email) || 'ons e-mailadres'}.
           </div>
         </div>
         ${offerte.notities ? `
         <div class="notities">
           <div class="notities-label">NOTITIES</div>
-          <div class="notities-tekst">${offerte.notities}</div>
+          <div class="notities-tekst">${escHtml(offerte.notities)}</div>
         </div>` : ''}
         <div class="footer">
-          <div class="footer-links">${bedrijf.bedrijfsnaam || ''}<br>${bedrijf.email || ''}<br>${bedrijf.website || ''}</div>
+          <div class="footer-links">${escHtml(bedrijf.bedrijfsnaam)}<br>${escHtml(bedrijf.email)}<br>${escHtml(bedrijf.website)}</div>
           <div class="footer-rechts">Gemaakt met ZZPBox</div>
         </div>
       </div>

@@ -46,7 +46,7 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
   const regelsHtml = factuur.regels?.map((r: FactuurRegel) => `
     <tr>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0;">
-        <div style="font-weight: 600; color: #1a1a1a;">${r.omschrijving}</div>
+        <div style="font-weight: 600; color: #1a1a1a;">${escHtml(r.omschrijving)}</div>
         <div style="font-size: 11px; color: #888; margin-top: 2px;">BTW ${r.btw} — per ${r.eenheid}</div>
       </td>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #555;">${r.aantal}</td>

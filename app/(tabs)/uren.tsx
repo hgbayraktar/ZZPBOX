@@ -16,6 +16,7 @@ import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../../constants/firebase';
 import { gebruikFacturen, gebruikGebruiker, gebruikKlanten, gebruikPakket, gebruikUren } from '../../hooks/gebruikData';
 import { nieuwFactuurNummer } from '../../utils/factuurNummer';
+import type { Klant } from '../../types';
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Vrijgesteld'];
 
@@ -367,11 +368,11 @@ export default function UrenScherm() {
   const timerKlant = klanten.find(k => k.id === timerKlantId);
   const filterKlant = klanten.find(k => k.id === filterKlantId);
 
-  function klantNaamVan(klant: any): string {
-    return klant?.bedrijfsnaam || klant?.naam || '';
+  function klantNaamVan(klant: Klant | undefined): string {
+    return klant?.bedrijfsnaam || klant?.contactpersoon || '';
   }
 
-  function klantAdresVan(klant: any): string {
+  function klantAdresVan(klant: Klant | undefined): string {
     if (!klant) return '';
     const regel1 = [klant.straat, klant.huisnummer].filter(Boolean).join(' ');
     const regel2 = [klant.postcode, klant.plaats].filter(Boolean).join(' ');
