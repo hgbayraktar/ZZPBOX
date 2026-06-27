@@ -180,9 +180,8 @@ export default function UrenScherm() {
     if (startMin === null) { Alert.alert('Fout', 'Vul de starttijd in als HH:MM (bijv. 09:00).'); return; }
     if (eindMin === null) { Alert.alert('Fout', 'Vul de eindtijd in als HH:MM (bijv. 17:30).'); return; }
 
-    let duurMinuten = eindMin - startMin;
-    if (duurMinuten <= 0) duurMinuten += 24 * 60;
-    if (duurMinuten < 1) { Alert.alert('Fout', 'Eindtijd moet na starttijd liggen.'); return; }
+    const duurMinuten = eindMin - startMin;
+    if (duurMinuten <= 0) { Alert.alert('Fout', 'Eindtijd moet na starttijd liggen. Controleer de tijden.'); return; }
 
     const klantNaam = klantNaamVan(klanten.find(k => k.id === handKlantId));
     const startDate = new Date(`${handDatum}T${handStart}:00`);
@@ -228,9 +227,8 @@ export default function UrenScherm() {
     if (startMin === null) { Alert.alert('Fout', 'Vul de starttijd in als HH:MM (bijv. 09:00).'); return; }
     if (eindMin === null) { Alert.alert('Fout', 'Vul de eindtijd in als HH:MM (bijv. 17:30).'); return; }
 
-    let duurMinuten = eindMin - startMin;
-    if (duurMinuten <= 0) duurMinuten += 24 * 60;
-    if (duurMinuten < 1) { Alert.alert('Fout', 'Eindtijd moet na starttijd liggen.'); return; }
+    const duurMinuten = eindMin - startMin;
+    if (duurMinuten <= 0) { Alert.alert('Fout', 'Eindtijd moet na starttijd liggen. Controleer de tijden.'); return; }
 
     const klantNaam = klantNaamVan(klanten.find(k => k.id === editKlantId));
     const startDate = new Date(`${editDatum}T${editStart}:00`);
@@ -280,6 +278,13 @@ export default function UrenScherm() {
   const klantenMetUren = klanten.filter(k => uren.some((u: any) => u.klantId === k.id));
 
   function openFactuurModal() {
+    if (pakket === 'gratis') {
+      Alert.alert('Premium functie', 'Facturen aanmaken is alleen beschikbaar in Premium.', [
+        { text: 'Annuleren', style: 'cancel' },
+        { text: 'Upgraden', onPress: () => router.push('/(tabs)/abonnement') }
+      ]);
+      return;
+    }
     if (ongefactureerd.length === 0) {
       Alert.alert('Geen uren', 'Er zijn geen ongefactureerde uren voor deze klant.');
       return;
@@ -339,7 +344,7 @@ export default function UrenScherm() {
         btwBedrag: btwBedrag.toFixed(2),
         datum: nu.toISOString().split('T')[0],
         categorie: 'Omzet diensten',
-        btw: factuurBtw,
+        btwTarief: factuurBtw,
         factuurNummer: nummer,
         aangemaaktOp: new Date().toISOString(),
       });

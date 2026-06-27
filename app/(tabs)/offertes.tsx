@@ -2,6 +2,8 @@ import * as Print from 'expo-print';
 import { useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../../constants/firebase';
 import {
   ActivityIndicator,
   Alert,
@@ -24,7 +26,7 @@ import {
   gebruikProducten,
   gebruikTransacties,
 } from '../../hooks/gebruikData';
-import { nieuwFactuurNummer } from '../../utils/factuurNummer';
+import { nieuwFactuurNummer, nieuwOfferteNummer } from '../../utils/factuurNummer';
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
 
@@ -229,16 +231,7 @@ export default function OffertesScherm() {
   ]);
   const [notities, setNotities] = useState('');
 
-  function volgendOfferteNummer(): string {
-    if (offertes.length === 0) return 'OFR0001';
-    const nummers = offertes
-      .map(o => parseInt((o.offerteNummer || '').replace('OFR', '')) || 0)
-      .filter(n => n > 0);
-    const max = nummers.length > 0 ? Math.max(...nummers) : 0;
-    return `OFR${String(max + 1).padStart(4, '0')}`;
-  }
-
-  function nieuweOfferte() {
+  async function nieuweOfferte() {
     if (pakket === 'gratis') {
       Alert.alert('Premium functie', 'Offertes aanmaken is alleen beschikbaar in Premium.', [
         { text: 'Annuleren', style: 'cancel' },
@@ -246,29 +239,37 @@ export default function OffertesScherm() {
       ]);
       return;
     }
-    setOfferteNummer(volgendOfferteNummer());
+    if (!gebruiker) return;
     setKlantNaam(''); setKlantEmail(''); setKlantAdres('');
     setKlantKvk(''); setKlantBtw(''); setNotities('');
     setDatum(new Date().toLocaleDateString('nl-NL'));
     const d = new Date(); d.setDate(d.getDate() + 30);
     setGeldigTot(d.toLocaleDateString('nl-NL'));
     setRegels([{ id: '1', omschrijving: '', aantal: '1', prijs: '', btw: '21%', eenheid: 'stuk' }]);
+    const nummer = await nieuwOfferteNummer(gebruiker.uid);
+    setOfferteNummer(nummer);
     setModalZichtbaar(true);
   }
 
-  function startNummerInstellen() {
+  async function startNummerInstellen() {
     const num = parseInt(startNummerInvoer);
     if (isNaN(num) || num < 1) {
       Alert.alert('Ongeldig nummer', 'Voer een geldig startnummer in (minimaal 1).');
       return;
     }
-    setNummerModalZichtbaar(false);
-    Alert.alert('Ingesteld', `Volgende offerte begint bij OFR${String(num).padStart(4, '0')}.`);
+    if (!gebruiker) return;
+    try {
+      await setDoc(doc(db, 'gebruikers', gebruiker.uid, 'tellers', 'offertes'), { laatsteNummer: num - 1 });
+      setNummerModalZichtbaar(false);
+      Alert.alert('Ingesteld', `Volgende offerte begint bij OFR${String(num).padStart(4, '0')}.`);
+    } catch {
+      Alert.alert('Fout', 'Kon startnummer niet instellen.');
+    }
   }
 
   function klantSelecteren(klant: any) {
-    setKlantNaam(klant.bedrijfsnaam);
-    setKlantEmail(klant.email);
+    setKlantNaam(klant.bedrijfsnaam || klant.contactpersoon || '');
+    setKlantEmail(klant.email || '');
     setKlantAdres(`${klant.straat || ''} ${klant.huisnummer || ''}, ${klant.postcode || ''} ${klant.plaats || ''}`.trim());
     setKlantKvk(klant.kvkNummer || '');
     setKlantBtw(klant.btwNummer || '');
@@ -336,6 +337,13 @@ export default function OffertesScherm() {
   }
 
   async function omzettenNaarFactuur(offerte: any) {
+    if (pakket === 'gratis') {
+      Alert.alert('Premium functie', 'Facturen aanmaken is alleen beschikbaar in Premium.', [
+        { text: 'Annuleren', style: 'cancel' },
+        { text: 'Upgraden', onPress: () => router.push('/(tabs)/abonnement') }
+      ]);
+      return;
+    }
     Alert.alert(
       'Omzetten naar factuur',
       `Weet u zeker dat u offerte ${offerte.offerteNummer} wilt omzetten naar een factuur?`,
@@ -417,7 +425,12 @@ export default function OffertesScherm() {
           dialogTitle: `Offerte ${offerte.offerteNummer} delen`,
           UTI: 'com.adobe.pdf',
         });
-        await bijwerken(offerte.id, { status: 'verzonden' });
+        if (offerte.status === 'concept') {
+          await bijwerken(offerte.id, { status: 'verzonden' });
+          if (geselecteerdeOfferte?.id === offerte.id) {
+            setGeselecteerdeOfferte({ ...geselecteerdeOfferte, status: 'verzonden' });
+          }
+        }
       } else {
         Alert.alert('Niet beschikbaar', 'Delen is niet beschikbaar op dit apparaat.');
       }

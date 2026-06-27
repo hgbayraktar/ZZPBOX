@@ -26,6 +26,19 @@ type FactuurRegel = {
   eenheid: string;
 };
 
+function escHtml(s: string | null | undefined): string {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function normalizeerDatum(datum: string | undefined): string {
+  const nlMatch = (datum || '').match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if (nlMatch) {
+    const [, d, m, y] = nlMatch;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  return datum || '';
+}
+
 function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
   const euro = (b: number) => `€ ${b.toFixed(2).replace('.', ',')}`;
 
@@ -149,12 +162,12 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
         </div>
         <div class="klant-sectie">
           <div class="klant-label">FACTUUR AAN</div>
-          <div class="klant-naam">${factuur.klantNaam}</div>
+          <div class="klant-naam">${escHtml(factuur.klantNaam)}</div>
           <div class="klant-info">
-            ${factuur.klantAdres ? factuur.klantAdres + '<br>' : ''}
-            ${factuur.klantEmail ? factuur.klantEmail + '<br>' : ''}
-            ${factuur.klantKvk ? 'KvK: ' + factuur.klantKvk + '<br>' : ''}
-            ${factuur.klantBtw ? 'BTW: ' + factuur.klantBtw : ''}
+            ${factuur.klantAdres ? escHtml(factuur.klantAdres) + '<br>' : ''}
+            ${factuur.klantEmail ? escHtml(factuur.klantEmail) + '<br>' : ''}
+            ${factuur.klantKvk ? 'KvK: ' + escHtml(factuur.klantKvk) + '<br>' : ''}
+            ${factuur.klantBtw ? 'BTW: ' + escHtml(factuur.klantBtw) : ''}
           </div>
         </div>
         <table>
@@ -186,7 +199,7 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
         ${factuur.notities ? `
         <div class="notities">
           <div class="notities-label">NOTITIES</div>
-          <div class="notities-tekst">${factuur.notities}</div>
+          <div class="notities-tekst">${escHtml(factuur.notities)}</div>
         </div>` : ''}
         <div class="footer">
           <div class="footer-links">${bedrijf.bedrijfsnaam || ''}<br>${bedrijf.email || ''}<br>${bedrijf.website || ''}</div>
@@ -289,8 +302,8 @@ export default function FacturenScherm() {
   }
 
   function klantSelecteren(klant: any) {
-    setKlantNaam(klant.bedrijfsnaam);
-    setKlantEmail(klant.email);
+    setKlantNaam(klant.bedrijfsnaam || klant.contactpersoon || '');
+    setKlantEmail(klant.email || '');
     setKlantAdres(`${klant.straat || ''} ${klant.huisnummer || ''}, ${klant.postcode || ''} ${klant.plaats || ''}`.trim());
     setKlantKvk(klant.kvkNummer || '');
     setKlantBtw(klant.btwNummer || '');
@@ -484,10 +497,10 @@ export default function FacturenScherm() {
     }
     const gefilterd = [...facturen]
       .filter(f => {
-        const d = f.aangemaaktOp?.slice(0, 10) || '';
+        const d = normalizeerDatum(f.datum);
         return d >= vanDatum && d <= totDatum;
       })
-      .sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp));
+      .sort((a, b) => normalizeerDatum(b.datum).localeCompare(normalizeerDatum(a.datum)));
 
     if (gefilterd.length === 0) {
       Alert.alert('Geen facturen', 'Er zijn geen facturen in deze periode.');
@@ -541,6 +554,17 @@ export default function FacturenScherm() {
         klantMap[f.klantNaam].totaalGefactureerd += totaalF;
         if (f.status === 'betaald') {
           klantMap[f.klantNaam].totaalBetaald += totaalF;
+        }
+      });
+
+    // Deduct creditnota amounts from totaalGefactureerd
+    facturen
+      .filter(f => f.soort === 'creditnota')
+      .forEach(f => {
+        const creditBedrag = f.regels?.reduce((s: number, r: FactuurRegel) =>
+          s + berekenRegelTotaal(r) + berekenBtw(r), 0) || 0;
+        if (klantMap[f.klantNaam]) {
+          klantMap[f.klantNaam].totaalGefactureerd -= creditBedrag;
         }
       });
 

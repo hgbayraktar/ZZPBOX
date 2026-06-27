@@ -1,5 +1,5 @@
 import { addDoc, collection, deleteDoc, doc, onSnapshot, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { db } from '../constants/firebase';
 import { useAuth } from './AuthContext';
 
@@ -91,16 +91,20 @@ export function gebruikCategorieën() {
   const { gebruiker } = gebruikGebruiker();
   const [categorieën, setCategorieën] = useState<any[]>([]);
   const [laden, setLaden] = useState(true);
-  const [geïnitialiseerd, setGeïnitialiseerd] = useState(false);
+  const geïnitialiseerd = useRef(false);
 
   useEffect(() => {
     if (!gebruiker) return;
     const afmelden = onSnapshot(
       collection(db, 'gebruikers', gebruiker.uid, 'categorieën'),
       async (snap) => {
-        if (snap.empty && !geïnitialiseerd) {
-          setGeïnitialiseerd(true);
-          await standaardCategorieënAanmaken();
+        if (snap.empty && !geïnitialiseerd.current) {
+          geïnitialiseerd.current = true;
+          try {
+            await standaardCategorieënAanmaken();
+          } finally {
+            setLaden(false);
+          }
         } else {
           const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
           setCategorieën(gegevens);
