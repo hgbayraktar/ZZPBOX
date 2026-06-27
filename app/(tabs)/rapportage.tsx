@@ -486,7 +486,7 @@ export default function RapportageScherm() {
                         <View key={t.id} style={stijlen.transactieRegel}>
                           <View style={{ flex: 1 }}>
                             <Text style={stijlen.transactieRegelTekst}>{t.omschrijving}</Text>
-                            <Text style={stijlen.transactieRegelDatum}>{t.datum} · BTW {t.btwTarief}</Text>
+                            <Text style={stijlen.transactieRegelDatum}>{isoNaarNl(t.datum)} · BTW {t.btwTarief}</Text>
                           </View>
                           <Text style={stijlen.transactieRegelBedragGroen}>{euro(parseFloat(t.bedrag))}</Text>
                         </View>
@@ -526,7 +526,7 @@ export default function RapportageScherm() {
                         <View key={t.id} style={stijlen.transactieRegel}>
                           <View style={{ flex: 1 }}>
                             <Text style={stijlen.transactieRegelTekst}>{t.omschrijving}</Text>
-                            <Text style={stijlen.transactieRegelDatum}>{t.datum}</Text>
+                            <Text style={stijlen.transactieRegelDatum}>{isoNaarNl(t.datum)}</Text>
                           </View>
                           <Text style={stijlen.transactieRegelBedragRood}>-{euro(parseFloat(t.bedrag))}</Text>
                         </View>

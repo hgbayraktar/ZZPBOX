@@ -260,7 +260,9 @@ export default function OffertesScherm() {
   function klantSelecteren(klant: any) {
     setKlantNaam(klant.bedrijfsnaam || klant.contactpersoon || '');
     setKlantEmail(klant.email || '');
-    setKlantAdres(`${klant.straat || ''} ${klant.huisnummer || ''}, ${klant.postcode || ''} ${klant.plaats || ''}`.trim());
+    const _regel1 = [klant.straat, klant.huisnummer].filter(Boolean).join(' ');
+    const _regel2 = [klant.postcode, klant.plaats].filter(Boolean).join(' ');
+    setKlantAdres([_regel1, _regel2].filter(Boolean).join(', '));
     setKlantKvk(klant.kvkNummer || '');
     setKlantBtw(klant.btwNummer || '');
     setKlantModalZichtbaar(false);

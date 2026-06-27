@@ -112,16 +112,16 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
         <div class="header">
           <div>
             ${logo ? `<img src="${logo}" class="logo" />` : ''}
-            <div class="bedrijf-naam">${bedrijf.bedrijfsnaam || 'Bedrijfsnaam'}</div>
+            <div class="bedrijf-naam">${escHtml(bedrijf.bedrijfsnaam) || 'Bedrijfsnaam'}</div>
             <div class="bedrijf-info">
-              ${bedrijf.naamEigenaar ? bedrijf.naamEigenaar + '<br>' : ''}
-              ${bedrijf.straat ? bedrijf.straat + ' ' + (bedrijf.huisnummer || '') + '<br>' : ''}
-              ${bedrijf.postcode ? bedrijf.postcode + ' ' + (bedrijf.plaats || '') + '<br>' : ''}
-              ${bedrijf.kvkNummer ? 'KvK: ' + bedrijf.kvkNummer + '<br>' : ''}
-              ${bedrijf.btwNummer ? 'BTW: ' + bedrijf.btwNummer + '<br>' : ''}
-              ${bedrijf.email ? bedrijf.email + '<br>' : ''}
-              ${bedrijf.telefoon ? bedrijf.telefoon + '<br>' : ''}
-              ${bedrijf.website ? bedrijf.website : ''}
+              ${bedrijf.naamEigenaar ? escHtml(bedrijf.naamEigenaar) + '<br>' : ''}
+              ${bedrijf.straat ? escHtml(bedrijf.straat) + ' ' + escHtml(bedrijf.huisnummer) + '<br>' : ''}
+              ${bedrijf.postcode ? escHtml(bedrijf.postcode) + ' ' + escHtml(bedrijf.plaats) + '<br>' : ''}
+              ${bedrijf.kvkNummer ? 'KvK: ' + escHtml(bedrijf.kvkNummer) + '<br>' : ''}
+              ${bedrijf.btwNummer ? 'BTW: ' + escHtml(bedrijf.btwNummer) + '<br>' : ''}
+              ${bedrijf.email ? escHtml(bedrijf.email) + '<br>' : ''}
+              ${bedrijf.telefoon ? escHtml(bedrijf.telefoon) + '<br>' : ''}
+              ${bedrijf.website ? escHtml(bedrijf.website) : ''}
             </div>
           </div>
           <div class="factuur-blok">
@@ -1066,11 +1066,11 @@ export default function FacturenScherm() {
                 <View style={stijlen.voorbeeldDatumRij}>
                   <View>
                     <Text style={stijlen.voorbeeldDatumLabel}>Datum</Text>
-                    <Text style={stijlen.voorbeeldDatumWaarde}>{geselecteerdeFactuur.datum}</Text>
+                    <Text style={stijlen.voorbeeldDatumWaarde}>{isoNaarNl(geselecteerdeFactuur.datum)}</Text>
                   </View>
                   <View>
                     <Text style={stijlen.voorbeeldDatumLabel}>Vervaldatum</Text>
-                    <Text style={stijlen.voorbeeldDatumWaarde}>{geselecteerdeFactuur.vervaldatum}</Text>
+                    <Text style={stijlen.voorbeeldDatumWaarde}>{isoNaarNl(geselecteerdeFactuur.vervaldatum)}</Text>
                   </View>
                 </View>
                 <View style={stijlen.voorbeeldScheidingslijn} />

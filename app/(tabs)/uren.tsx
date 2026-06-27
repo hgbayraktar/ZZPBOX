@@ -360,8 +360,8 @@ export default function UrenScherm() {
     const s = parseHHMM(handStart);
     const e = parseHHMM(handEind);
     if (s === null || e === null) return null;
-    let d = e - s;
-    if (d <= 0) d += 24 * 60;
+    const d = e - s;
+    if (d <= 0) return null;
     return formateerDuur(d);
   })();
 

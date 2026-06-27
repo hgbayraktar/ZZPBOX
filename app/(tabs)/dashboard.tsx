@@ -28,8 +28,8 @@ export default function DashboardScherm() {
   const dezeMaand = nu.toISOString().slice(0, 7);
   const vandaag = nu.toISOString().split('T')[0];
 
-  const maandTransacties = transacties.filter(t => t.aangemaaktOp?.startsWith(dezeMaand));
-  const dagTransacties = transacties.filter(t => t.aangemaaktOp?.startsWith(vandaag));
+  const maandTransacties = transacties.filter(t => t.datum?.startsWith(dezeMaand));
+  const dagTransacties = transacties.filter(t => t.datum?.startsWith(vandaag));
 
   const maandInkomsten = maandTransacties
     .filter(t => t.soort === 'inkomst')

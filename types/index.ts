@@ -75,6 +75,7 @@ export interface UrenRegistratie {
   duurMinuten: number;
   status: 'geregistreerd' | 'gefactureerd';
   factuurNummer?: string;
+  aangemaaktOp?: string;
 }
 
 export interface Transactie {
