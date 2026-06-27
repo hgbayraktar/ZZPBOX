@@ -360,7 +360,7 @@ export default function FacturenScherm() {
       const btwBedrag21 = regels.filter(r => r.btw === '21%').reduce((s, r) => s + berekenBtw(r), 0);
       const btwBedrag9 = regels.filter(r => r.btw === '9%').reduce((s, r) => s + berekenBtw(r), 0);
       const totaalBtwBedrag = btwBedrag21 + btwBedrag9;
-      const btwTarief = btwBedrag21 > 0 ? '21%' : btwBedrag9 > 0 ? '9%' : '0%';
+      const btwTarief = btwBedrag21 > 0 && btwBedrag9 > 0 ? 'Gemengd' : btwBedrag21 > 0 ? '21%' : btwBedrag9 > 0 ? '9%' : '0%';
 
       await transactieToevoegen({
         omschrijving: isCreditnota

@@ -67,7 +67,7 @@ function rapportHtml(
   `).join('');
 
   const transactieRijen = [...transacties]
-    .sort((a, b) => (b.aangemaaktOp || '').localeCompare(a.aangemaaktOp || ''))
+    .sort((a, b) => (b.datum || '').localeCompare(a.datum || ''))
     .map(t => `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${isoNaarNl(t.datum)}</td>

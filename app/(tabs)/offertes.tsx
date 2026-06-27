@@ -260,9 +260,9 @@ export default function OffertesScherm() {
   function klantSelecteren(klant: any) {
     setKlantNaam(klant.bedrijfsnaam || klant.contactpersoon || '');
     setKlantEmail(klant.email || '');
-    const _regel1 = [klant.straat, klant.huisnummer].filter(Boolean).join(' ');
-    const _regel2 = [klant.postcode, klant.plaats].filter(Boolean).join(' ');
-    setKlantAdres([_regel1, _regel2].filter(Boolean).join(', '));
+    const adresRegel1 = [klant.straat, klant.huisnummer].filter(Boolean).join(' ');
+    const adresRegel2 = [klant.postcode, klant.plaats].filter(Boolean).join(' ');
+    setKlantAdres([adresRegel1, adresRegel2].filter(Boolean).join(', '));
     setKlantKvk(klant.kvkNummer || '');
     setKlantBtw(klant.btwNummer || '');
     setKlantModalZichtbaar(false);
@@ -669,7 +669,7 @@ export default function OffertesScherm() {
                 </View>
               ) : null}
 
-              {geselecteerdeOfferte.status !== 'verlopen' && (
+              {geselecteerdeOfferte.status !== 'verlopen' && geselecteerdeOfferte.status !== 'geaccepteerd' && (
                 <TouchableOpacity style={stijlen.omzettenKnop} onPress={() => omzettenNaarFactuur(geselecteerdeOfferte)} activeOpacity={0.8}>
                   <Text style={stijlen.omzettenKnopTekst}>✓ Omzetten naar factuur</Text>
                 </TouchableOpacity>

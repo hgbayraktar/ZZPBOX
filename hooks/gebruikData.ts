@@ -400,7 +400,7 @@ export function gebruikUren() {
     return afmelden;
   }, [gebruiker]);
 
-  async function toevoegen(registratie: Omit<UrenRegistratie, 'id'>) {
+  async function toevoegen(registratie: Omit<UrenRegistratie, 'id' | 'aangemaaktOp'>) {
     if (!gebruiker) return;
     await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'uren'), {
       ...registratie,

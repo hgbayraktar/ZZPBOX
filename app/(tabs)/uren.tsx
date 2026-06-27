@@ -653,8 +653,8 @@ export default function UrenScherm() {
               const sv = parseHHMM(editStart);
               const ev = parseHHMM(editEind);
               if (sv === null || ev === null) return null;
-              let d = ev - sv;
-              if (d <= 0) d += 24 * 60;
+              const d = ev - sv;
+              if (d <= 0) return null;
               return (
                 <View style={s.duurPreview}>
                   <Text style={s.duurPreviewTekst}>⏱ {formateerDuur(d)}</Text>
