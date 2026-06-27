@@ -2,6 +2,7 @@ import { addDoc, collection, deleteDoc, doc, onSnapshot, setDoc, updateDoc, writ
 import { useEffect, useRef, useState } from 'react';
 import { db } from '../constants/firebase';
 import { useAuth } from './AuthContext';
+import type { Bedrijf, Factuur, Klant, Offerte, Transactie, UrenRegistratie } from '../types';
 
 const STANDAARD_CATEGORIEEN = [
   // INKOMSTEN
@@ -189,7 +190,7 @@ export function gebruikCategorieën() {
 
 export function gebruikTransacties() {
   const { gebruiker } = gebruikGebruiker();
-  const [transacties, setTransacties] = useState<any[]>([]);
+  const [transacties, setTransacties] = useState<Transactie[]>([]);
   const [laden, setLaden] = useState(true);
 
   useEffect(() => {
@@ -197,7 +198,7 @@ export function gebruikTransacties() {
     const afmelden = onSnapshot(
       collection(db, 'gebruikers', gebruiker.uid, 'transacties'),
       (snap) => {
-        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Transactie[];
         setTransacties(gegevens);
         setLaden(false);
       }
@@ -205,7 +206,7 @@ export function gebruikTransacties() {
     return afmelden;
   }, [gebruiker]);
 
-  async function toevoegen(transactie: any) {
+  async function toevoegen(transactie: Omit<Transactie, 'id' | 'aangemaaktOp'>) {
     if (!gebruiker) return;
     await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'transacties'), {
       ...transactie,
@@ -223,7 +224,7 @@ export function gebruikTransacties() {
 
 export function gebruikKlanten() {
   const { gebruiker } = gebruikGebruiker();
-  const [klanten, setKlanten] = useState<any[]>([]);
+  const [klanten, setKlanten] = useState<Klant[]>([]);
   const [laden, setLaden] = useState(true);
 
   useEffect(() => {
@@ -231,7 +232,7 @@ export function gebruikKlanten() {
     const afmelden = onSnapshot(
       collection(db, 'gebruikers', gebruiker.uid, 'klanten'),
       (snap) => {
-        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Klant[];
         setKlanten(gegevens);
         setLaden(false);
       }
@@ -239,7 +240,7 @@ export function gebruikKlanten() {
     return afmelden;
   }, [gebruiker]);
 
-  async function toevoegen(klant: any) {
+  async function toevoegen(klant: Omit<Klant, 'id'>) {
     if (!gebruiker) return;
     await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'klanten'), {
       ...klant,
@@ -247,7 +248,7 @@ export function gebruikKlanten() {
     });
   }
 
-  async function bijwerken(id: string, klant: any) {
+  async function bijwerken(id: string, klant: Partial<Klant>) {
     if (!gebruiker) return;
     await updateDoc(doc(db, 'gebruikers', gebruiker.uid, 'klanten', id), klant);
   }
@@ -301,7 +302,7 @@ export function gebruikProducten() {
 
 export function gebruikFacturen() {
   const { gebruiker } = gebruikGebruiker();
-  const [facturen, setFacturen] = useState<any[]>([]);
+  const [facturen, setFacturen] = useState<Factuur[]>([]);
   const [laden, setLaden] = useState(true);
 
   useEffect(() => {
@@ -309,7 +310,7 @@ export function gebruikFacturen() {
     const afmelden = onSnapshot(
       collection(db, 'gebruikers', gebruiker.uid, 'facturen'),
       (snap) => {
-        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Factuur[];
         setFacturen(gegevens);
         setLaden(false);
       }
@@ -317,7 +318,7 @@ export function gebruikFacturen() {
     return afmelden;
   }, [gebruiker]);
 
-  async function toevoegen(factuur: any) {
+  async function toevoegen(factuur: Omit<Factuur, 'id' | 'aangemaaktOp'>) {
     if (!gebruiker) return;
     await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'facturen'), {
       ...factuur,
@@ -325,7 +326,7 @@ export function gebruikFacturen() {
     });
   }
 
-  async function bijwerken(id: string, gegevens: any) {
+  async function bijwerken(id: string, gegevens: Partial<Factuur>) {
     if (!gebruiker) return;
     await updateDoc(doc(db, 'gebruikers', gebruiker.uid, 'facturen', id), gegevens);
   }
@@ -340,7 +341,7 @@ export function gebruikFacturen() {
 
 export function gebruikOffertes() {
   const { gebruiker } = gebruikGebruiker();
-  const [offertes, setOffertes] = useState<any[]>([]);
+  const [offertes, setOffertes] = useState<Offerte[]>([]);
   const [laden, setLaden] = useState(true);
 
   useEffect(() => {
@@ -348,7 +349,7 @@ export function gebruikOffertes() {
     const afmelden = onSnapshot(
       collection(db, 'gebruikers', gebruiker.uid, 'offertes'),
       (snap) => {
-        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Offerte[];
         setOffertes(gegevens);
         setLaden(false);
       }
@@ -356,7 +357,7 @@ export function gebruikOffertes() {
     return afmelden;
   }, [gebruiker]);
 
-  async function toevoegen(offerte: any) {
+  async function toevoegen(offerte: Omit<Offerte, 'id'>) {
     if (!gebruiker) return;
     await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'offertes'), {
       ...offerte,
@@ -364,7 +365,7 @@ export function gebruikOffertes() {
     });
   }
 
-  async function bijwerken(id: string, gegevens: any) {
+  async function bijwerken(id: string, gegevens: Partial<Offerte>) {
     if (!gebruiker) return;
     await updateDoc(doc(db, 'gebruikers', gebruiker.uid, 'offertes', id), gegevens);
   }
@@ -379,7 +380,7 @@ export function gebruikOffertes() {
 
 export function gebruikUren() {
   const { gebruiker } = gebruikGebruiker();
-  const [uren, setUren] = useState<any[]>([]);
+  const [uren, setUren] = useState<UrenRegistratie[]>([]);
   const [laden, setLaden] = useState(true);
 
   useEffect(() => {
@@ -387,7 +388,7 @@ export function gebruikUren() {
     const afmelden = onSnapshot(
       collection(db, 'gebruikers', gebruiker.uid, 'uren'),
       (snap) => {
-        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as UrenRegistratie[];
         setUren(gegevens);
         setLaden(false);
       },
@@ -399,7 +400,7 @@ export function gebruikUren() {
     return afmelden;
   }, [gebruiker]);
 
-  async function toevoegen(registratie: any) {
+  async function toevoegen(registratie: Omit<UrenRegistratie, 'id'>) {
     if (!gebruiker) return;
     await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'uren'), {
       ...registratie,
@@ -407,7 +408,7 @@ export function gebruikUren() {
     });
   }
 
-  async function bijwerken(id: string, gegevens: any) {
+  async function bijwerken(id: string, gegevens: Partial<UrenRegistratie>) {
     if (!gebruiker) return;
     await updateDoc(doc(db, 'gebruikers', gebruiker.uid, 'uren', id), gegevens);
   }
@@ -422,7 +423,7 @@ export function gebruikUren() {
 
 export function gebruikBedrijf() {
   const { gebruiker } = gebruikGebruiker();
-  const [bedrijf, setBedrijf] = useState<any>({});
+  const [bedrijf, setBedrijf] = useState<Bedrijf>({});
   const [laden, setLaden] = useState(true);
 
   useEffect(() => {
@@ -430,14 +431,14 @@ export function gebruikBedrijf() {
     const afmelden = onSnapshot(
       doc(db, 'gebruikers', gebruiker.uid, 'instellingen', 'bedrijf'),
       (snap) => {
-        if (snap.exists()) setBedrijf(snap.data());
+        if (snap.exists()) setBedrijf(snap.data() as Bedrijf);
         setLaden(false);
       }
     );
     return afmelden;
   }, [gebruiker]);
 
-  async function opslaan(gegevens: any) {
+  async function opslaan(gegevens: Bedrijf) {
     if (!gebruiker) return;
     await setDoc(doc(db, 'gebruikers', gebruiker.uid, 'instellingen', 'bedrijf'), gegevens);
   }

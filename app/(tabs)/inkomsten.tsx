@@ -148,7 +148,7 @@ export default function TransactiesScherm() {
     const gefilterd = transacties.filter(t => {
       const d = t.aangemaaktOp?.slice(0, 10) || '';
       return d >= vanDatum && d <= totDatum;
-    }).sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp));
+    }).sort((a, b) => (b.aangemaaktOp || '').localeCompare(a.aangemaaktOp || ''));
 
     if (gefilterd.length === 0) {
       Alert.alert('Geen transacties', 'Er zijn geen transacties in deze periode.');
@@ -296,7 +296,7 @@ export default function TransactiesScherm() {
         ) : (
           <>
             {[...transacties]
-              .sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp))
+              .sort((a, b) => (b.aangemaaktOp || '').localeCompare(a.aangemaaktOp || ''))
               .map(t => (
                 <TouchableOpacity
                   key={t.id}

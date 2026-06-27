@@ -27,17 +27,10 @@ import {
   gebruikTransacties,
 } from '../../hooks/gebruikData';
 import { nieuwFactuurNummer, nieuwOfferteNummer } from '../../utils/factuurNummer';
+import { isoNaarNl, nlNaarIso, vandaagIso, vandaagNl, vandaagPlusDagen } from '../../utils/datum';
+import type { OfferteRegel } from '../../types';
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
-
-type OfferteRegel = {
-  id: string;
-  omschrijving: string;
-  aantal: string;
-  prijs: string;
-  btw: string;
-  eenheid: string;
-};
 
 function offerteHtml(offerte: any, bedrijf: any): string {
   const euro = (b: number) => `€ ${b.toFixed(2).replace('.', ',')}`;
@@ -140,8 +133,8 @@ function offerteHtml(offerte: any, bedrijf: any): string {
         </div>
         <hr class="scheidingslijn-goud">
         <div class="datum-rij">
-          <div class="datum-item"><label>DATUM</label><span>${offerte.datum}</span></div>
-          <div class="datum-item"><label>GELDIG TOT</label><span>${offerte.geldigTot}</span></div>
+          <div class="datum-item"><label>DATUM</label><span>${isoNaarNl(offerte.datum)}</span></div>
+          <div class="datum-item"><label>GELDIG TOT</label><span>${isoNaarNl(offerte.geldigTot)}</span></div>
           <div class="datum-item"><label>NUMMER</label><span>${offerte.offerteNummer}</span></div>
         </div>
         <div class="klant-sectie">
@@ -220,12 +213,8 @@ export default function OffertesScherm() {
   const [klantAdres, setKlantAdres] = useState('');
   const [klantKvk, setKlantKvk] = useState('');
   const [klantBtw, setKlantBtw] = useState('');
-  const [datum, setDatum] = useState(new Date().toLocaleDateString('nl-NL'));
-  const [geldigTot, setGeldigTot] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 30);
-    return d.toLocaleDateString('nl-NL');
-  });
+  const [datum, setDatum] = useState(vandaagNl());
+  const [geldigTot, setGeldigTot] = useState(() => isoNaarNl(vandaagPlusDagen(30)));
   const [regels, setRegels] = useState<OfferteRegel[]>([
     { id: '1', omschrijving: '', aantal: '1', prijs: '', btw: '21%', eenheid: 'stuk' }
   ]);
@@ -242,9 +231,8 @@ export default function OffertesScherm() {
     if (!gebruiker) return;
     setKlantNaam(''); setKlantEmail(''); setKlantAdres('');
     setKlantKvk(''); setKlantBtw(''); setNotities('');
-    setDatum(new Date().toLocaleDateString('nl-NL'));
-    const d = new Date(); d.setDate(d.getDate() + 30);
-    setGeldigTot(d.toLocaleDateString('nl-NL'));
+    setDatum(vandaagNl());
+    setGeldigTot(isoNaarNl(vandaagPlusDagen(30)));
     setRegels([{ id: '1', omschrijving: '', aantal: '1', prijs: '', btw: '21%', eenheid: 'stuk' }]);
     const nummer = await nieuwOfferteNummer(gebruiker.uid);
     setOfferteNummer(nummer);
@@ -326,7 +314,7 @@ export default function OffertesScherm() {
     }
     setBezig(true);
     try {
-      await toevoegen({ offerteNummer, klantNaam, klantEmail, klantAdres, klantKvk, klantBtw, datum, geldigTot, regels, status: 'concept', notities });
+      await toevoegen({ offerteNummer, klantNaam, klantEmail, klantAdres, klantKvk, klantBtw, datum: nlNaarIso(datum), geldigTot: nlNaarIso(geldigTot), regels, status: 'concept', notities });
       setModalZichtbaar(false);
       Alert.alert('Opgeslagen', `Offerte ${offerteNummer} is aangemaakt.`);
     } catch {
@@ -354,9 +342,8 @@ export default function OffertesScherm() {
             try {
               if (!gebruiker) return;
               const factuurNr = await nieuwFactuurNummer(gebruiker.uid, false);
-              const vandaag = new Date().toLocaleDateString('nl-NL');
-              const verval = new Date(); verval.setDate(verval.getDate() + 30);
-              const vervaldatum = verval.toLocaleDateString('nl-NL');
+              const vandaag = vandaagIso();
+              const vervaldatum = vandaagPlusDagen(30);
 
               const regelsVoorFactuur = offerte.regels?.map((r: OfferteRegel) => ({ ...r, id: Date.now().toString() + r.id })) || [];
 
@@ -493,7 +480,7 @@ export default function OffertesScherm() {
                 <View style={{ flex: 1 }}>
                   <Text style={stijlen.offerteNummer}>{offerte.offerteNummer}</Text>
                   <Text style={stijlen.offerteKlant}>{offerte.klantNaam}</Text>
-                  <Text style={stijlen.offerteDatum}>{offerte.datum} · geldig tot {offerte.geldigTot}</Text>
+                  <Text style={stijlen.offerteDatum}>{isoNaarNl(offerte.datum)} · geldig tot {isoNaarNl(offerte.geldigTot)}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 6 }}>
                   <View style={[stijlen.statusBadge, { backgroundColor: (statusKleur[offerte.status] || '#888') + '22' }]}>
@@ -641,12 +628,12 @@ export default function OffertesScherm() {
               </View>
               <View style={stijlen.detailKaart}>
                 <Text style={stijlen.detailLabel}>DATUM / GELDIG TOT</Text>
-                <Text style={stijlen.detailWaarde}>{geselecteerdeOfferte.datum} → {geselecteerdeOfferte.geldigTot}</Text>
+                <Text style={stijlen.detailWaarde}>{isoNaarNl(geselecteerdeOfferte.datum)} → {isoNaarNl(geselecteerdeOfferte.geldigTot)}</Text>
               </View>
               <View style={stijlen.detailKaart}>
                 <Text style={stijlen.detailLabel}>STATUS</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-                  {['concept', 'verzonden', 'geaccepteerd', 'verlopen'].map(s => (
+                  {(['concept', 'verzonden', 'geaccepteerd', 'verlopen'] as const).map(s => (
                     <TouchableOpacity key={s} style={[stijlen.statusKnop, geselecteerdeOfferte.status === s && { backgroundColor: (statusKleur[s] || '#888') + '33', borderColor: statusKleur[s] || '#888' }]}
                       onPress={async () => {
                         await bijwerken(geselecteerdeOfferte.id, { status: s });

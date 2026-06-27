@@ -45,7 +45,7 @@ export default function DashboardScherm() {
     .reduce((s, t) => s + parseFloat(t.btwBedrag || '0'), 0);
 
   const recenteTransacties = [...transacties]
-    .sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp))
+    .sort((a, b) => (b.aangemaaktOp || '').localeCompare(a.aangemaaktOp || ''))
     .slice(0, 5);
 
   const dagLimiet = 3;

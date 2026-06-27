@@ -156,14 +156,13 @@ export default function UrenScherm() {
     const klantNaam = klantNaamVan(klanten.find(k => k.id === timerKlantId));
     await toevoegen({
       datum: timerStart.toISOString().split('T')[0],
-      klantId: timerKlantId || null,
+      klantId: timerKlantId || undefined,
       klantNaam,
       omschrijving: timerOmschrijving || 'Werkzaamheden',
       startTijd: timerStart.toISOString(),
       eindTijd: eindTijd.toISOString(),
       duurMinuten,
       status: 'geregistreerd',
-      factuurNummer: null,
     });
 
     setTimerSeconden(0);
@@ -189,14 +188,13 @@ export default function UrenScherm() {
 
     await toevoegen({
       datum: handDatum,
-      klantId: handKlantId || null,
+      klantId: handKlantId || undefined,
       klantNaam,
       omschrijving: handOmschrijving || 'Werkzaamheden',
       startTijd: startDate.toISOString(),
       eindTijd: eindDate.toISOString(),
       duurMinuten,
       status: 'geregistreerd',
-      factuurNummer: null,
     });
 
     setHandmatigModal(false);
@@ -318,7 +316,6 @@ export default function UrenScherm() {
       soort: 'factuur',
       datum: nu.toISOString().split('T')[0],
       vervaldatum: vervaldatum.toISOString().split('T')[0],
-      klantId: filterKlantId,
       klantNaam: klantNaamVan(klant),
       klantAdres: klantAdresVan(klant),
       klantKvk: klant?.kvkNummer || '',

@@ -14,30 +14,15 @@ import {
 } from 'react-native';
 import { gebruikBedrijf, gebruikFacturen, gebruikGebruiker, gebruikKlanten, gebruikPakket, gebruikProducten, gebruikTransacties } from '../../hooks/gebruikData';
 import { nieuwFactuurNummer } from '../../utils/factuurNummer';
+import { isoNaarNl, nlNaarIso, vandaagNl, vandaagPlusDagen } from '../../utils/datum';
+import type { Factuur, FactuurRegel } from '../../types';
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
-
-type FactuurRegel = {
-  id: string;
-  omschrijving: string;
-  aantal: string;
-  prijs: string;
-  btw: string;
-  eenheid: string;
-};
 
 function escHtml(s: string | null | undefined): string {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function normalizeerDatum(datum: string | undefined): string {
-  const nlMatch = (datum || '').match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-  if (nlMatch) {
-    const [, d, m, y] = nlMatch;
-    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-  }
-  return datum || '';
-}
 
 function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
   const euro = (b: number) => `€ ${b.toFixed(2).replace('.', ',')}`;
@@ -156,8 +141,8 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
         </div>` : ''}
         <hr class="scheidingslijn-goud">
         <div class="datum-rij">
-          <div class="datum-item"><label>DATUM</label><span>${factuur.datum}</span></div>
-          <div class="datum-item"><label>VERVALDATUM</label><span>${factuur.vervaldatum}</span></div>
+          <div class="datum-item"><label>DATUM</label><span>${isoNaarNl(factuur.datum)}</span></div>
+          <div class="datum-item"><label>VERVALDATUM</label><span>${isoNaarNl(factuur.vervaldatum)}</span></div>
           <div class="datum-item"><label>NUMMER</label><span>${factuur.factuurNummer}</span></div>
         </div>
         <div class="klant-sectie">
@@ -245,12 +230,8 @@ export default function FacturenScherm() {
   const [klantAdres, setKlantAdres] = useState('');
   const [klantKvk, setKlantKvk] = useState('');
   const [klantBtw, setKlantBtw] = useState('');
-  const [datum, setDatum] = useState(new Date().toLocaleDateString('nl-NL'));
-  const [vervaldatum, setVervaldatum] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 30);
-    return d.toLocaleDateString('nl-NL');
-  });
+  const [datum, setDatum] = useState(vandaagNl());
+  const [vervaldatum, setVervaldatum] = useState(() => isoNaarNl(vandaagPlusDagen(30)));
   const [regels, setRegels] = useState<FactuurRegel[]>([
     { id: '1', omschrijving: '', aantal: '1', prijs: '', btw: '21%', eenheid: 'stuk' }
   ]);
@@ -367,7 +348,7 @@ export default function FacturenScherm() {
     try {
       await toevoegen({
         factuurNummer, klantNaam, klantEmail, klantAdres,
-        klantKvk, klantBtw, datum, vervaldatum,
+        klantKvk, klantBtw, datum: nlNaarIso(datum), vervaldatum: nlNaarIso(vervaldatum),
         regels, status: isCreditnota ? 'creditnota' : 'concept',
         soort: isCreditnota ? 'creditnota' : 'factuur',
         notities,
@@ -406,7 +387,7 @@ export default function FacturenScherm() {
     }
   }
 
-  async function statusBijwerken(id: string, nieuwStatus: string) {
+  async function statusBijwerken(id: string, nieuwStatus: Factuur['status']) {
     await bijwerken(id, { status: nieuwStatus });
     if (geselecteerdeFactuur?.id === id) {
       setGeselecteerdeFactuur({ ...geselecteerdeFactuur, status: nieuwStatus });
@@ -497,10 +478,10 @@ export default function FacturenScherm() {
     }
     const gefilterd = [...facturen]
       .filter(f => {
-        const d = normalizeerDatum(f.datum);
+        const d = nlNaarIso(f.datum);
         return d >= vanDatum && d <= totDatum;
       })
-      .sort((a, b) => normalizeerDatum(b.datum).localeCompare(normalizeerDatum(a.datum)));
+      .sort((a, b) => nlNaarIso(b.datum).localeCompare(nlNaarIso(a.datum)));
 
     if (gefilterd.length === 0) {
       Alert.alert('Geen facturen', 'Er zijn geen facturen in deze periode.');
@@ -591,7 +572,7 @@ export default function FacturenScherm() {
     return '📝 Concept';
   }
 
-  const alleFacturen = [...facturen].sort((a, b) => b.aangemaaktOp?.localeCompare(a.aangemaaktOp));
+  const alleFacturen = [...facturen].sort((a, b) => (b.aangemaaktOp || '').localeCompare(a.aangemaaktOp || ''));
 
   return (
     <View style={stijlen.scherm}>
@@ -701,8 +682,8 @@ export default function FacturenScherm() {
                   </View>
                 </View>
                 <View style={stijlen.factuurMeta}>
-                  <Text style={stijlen.factuurMetaTekst}>📅 {factuur.datum}</Text>
-                  <Text style={stijlen.factuurMetaTekst}>⏰ Vervalt: {factuur.vervaldatum}</Text>
+                  <Text style={stijlen.factuurMetaTekst}>📅 {isoNaarNl(factuur.datum)}</Text>
+                  <Text style={stijlen.factuurMetaTekst}>⏰ Vervalt: {isoNaarNl(factuur.vervaldatum)}</Text>
                   <TouchableOpacity style={stijlen.snelDelenKnop} onPress={() => pdfDelenVanFactuur(factuur)}>
                     <Text style={stijlen.snelDelenTekst}>📤 Delen</Text>
                   </TouchableOpacity>
@@ -790,7 +771,7 @@ export default function FacturenScherm() {
                         style={stijlen.debiteurFactuurregel}
                         onPress={() => { setGeselecteerdeFactuur(f); setVoorbeeldZichtbaar(true); }}>
                         <Text style={stijlen.debiteurFactuurNummer}>{f.factuurNummer}</Text>
-                        <Text style={stijlen.debiteurFactuurDatum}>{f.datum}</Text>
+                        <Text style={stijlen.debiteurFactuurDatum}>{isoNaarNl(f.datum)}</Text>
                         <Text style={[stijlen.debiteurFactuurBedrag, { color: statusKleur(f.status) }]}>
                           {euro(f.regels?.reduce((s: number, r: FactuurRegel) =>
                             s + berekenRegelTotaal(r) + berekenBtw(r), 0) || 0)}
