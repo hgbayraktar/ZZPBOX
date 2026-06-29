@@ -1,7 +1,7 @@
 import * as Print from 'expo-print';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Alert, Modal,
@@ -43,10 +43,13 @@ export default function TransactiesScherm() {
 
   const { soort: soortParam } = useLocalSearchParams<{ soort?: string }>();
 
+  const autoGeopend = useRef(false);
   useEffect(() => {
+    if (laden || autoGeopend.current || !soortParam) return;
+    autoGeopend.current = true;
     if (soortParam === 'uitgave') nieuweTransactie('uitgave');
     else if (soortParam === 'inkomst') nieuweTransactie('inkomst');
-  }, []);
+  }, [laden, soortParam]);
 
   const vandaag = new Date().toISOString().split('T')[0];
   const dezeMaand = new Date().toISOString().slice(0, 7);
@@ -103,9 +106,13 @@ export default function TransactiesScherm() {
       Alert.alert('Verplichte velden', 'Vul omschrijving en bedrag in.');
       return;
     }
+    const b = parseFloat(bedrag.replace(',', '.'));
+    if (isNaN(b) || b <= 0) {
+      Alert.alert('Ongeldig bedrag', 'Voer een geldig bedrag in, bijvoorbeeld 125 of 99,50.');
+      return;
+    }
     setBezig(true);
     try {
-      const b = parseFloat(bedrag.replace(',', '.'));
       await toevoegen({
         soort,
         omschrijving,

@@ -135,15 +135,15 @@ export default function HandleidingScherm() {
           <Alinea tekst="ZZPBox is gratis te gebruiken. Met een Premium-abonnement heeft u toegang tot alle functies zonder beperkingen." />
           <Vergelijking
             links={[
-              'Max. 2 facturen per maand',
-              'Max. 10 transacties per maand',
+              'Max. 3 transacties per dag',
+              'Max. 20 transacties per maand',
+              'Facturen en offertes bekijken',
               'Rapportage bekijken',
-              'Urenregistratie',
-              'Offertes bekijken',
+              'Urenregistratie (niet factureren)',
             ]}
             rechts={[
-              'Onbeperkt facturen',
               'Onbeperkt transacties',
+              'Facturen aanmaken en delen',
               'Offertes aanmaken en delen',
               'PDF exporteren en delen',
               "Creditnota's aanmaken",

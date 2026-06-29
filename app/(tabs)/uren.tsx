@@ -181,7 +181,7 @@ export default function UrenScherm() {
     if (eindMin === null) { Alert.alert('Fout', 'Vul de eindtijd in als HH:MM (bijv. 17:30).'); return; }
 
     const duurMinuten = eindMin - startMin;
-    if (duurMinuten <= 0) { Alert.alert('Fout', 'Eindtijd moet na starttijd liggen. Controleer de tijden.'); return; }
+    if (duurMinuten <= 0) { Alert.alert('Fout', 'De eindtijd ligt vóór de starttijd. Nachtdiensten worden niet ondersteund — splits de registratie op in twee aparte invoeren.'); return; }
 
     const klantNaam = klantNaamVan(klanten.find(k => k.id === handKlantId));
     const startDate = new Date(`${handDatum}T${handStart}:00`);
@@ -227,7 +227,7 @@ export default function UrenScherm() {
     if (eindMin === null) { Alert.alert('Fout', 'Vul de eindtijd in als HH:MM (bijv. 17:30).'); return; }
 
     const duurMinuten = eindMin - startMin;
-    if (duurMinuten <= 0) { Alert.alert('Fout', 'Eindtijd moet na starttijd liggen. Controleer de tijden.'); return; }
+    if (duurMinuten <= 0) { Alert.alert('Fout', 'De eindtijd ligt vóór de starttijd. Nachtdiensten worden niet ondersteund — splits de registratie op in twee aparte invoeren.'); return; }
 
     const klantNaam = klantNaamVan(klanten.find(k => k.id === editKlantId));
     const startDate = new Date(`${editDatum}T${editStart}:00`);

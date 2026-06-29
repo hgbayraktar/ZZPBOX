@@ -197,7 +197,7 @@ export default function DashboardScherm() {
                 <Text style={[stijlen.transactieBedrag, {
                   color: t.soort === 'inkomst' ? '#4CAF50' : '#f44336'
                 }]}>
-                  {t.soort === 'inkomst' ? '+' : '-'}{euro(parseFloat(t.bedrag))}
+                  {t.soort === 'inkomst' ? '+' : '-'}{euro(parseFloat(t.bedrag || '0'))}
                 </Text>
               </View>
             </View>

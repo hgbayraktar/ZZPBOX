@@ -1,8 +1,7 @@
 import * as Print from 'expo-print';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as ScreenCapture from 'expo-screen-capture';
 import * as Sharing from 'expo-sharing';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator, Alert,
   ScrollView,
@@ -73,9 +72,9 @@ function rapportHtml(
         <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${isoNaarNl(t.datum)}</td>
         <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${escHtml(t.omschrijving)}</td>
         <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${escHtml(t.categorie) || '-'}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${escHtml(t.btwTarief)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-size: 11px;">${escHtml(t.btwTarief) || '-'}</td>
         <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; text-align: right; font-size: 11px; color: ${t.soort === 'inkomst' ? '#4CAF50' : '#f44336'}; font-weight: 600;">
-          ${t.soort === 'inkomst' ? '+' : '-'}${euro(parseFloat(t.bedrag))}
+          ${t.soort === 'inkomst' ? '+' : '-'}${euro(parseFloat(t.bedrag || '0'))}
         </td>
       </tr>
     `).join('');
@@ -225,15 +224,6 @@ export default function RapportageScherm() {
   const [tabActief, setTabActief] = useState<'overzicht' | 'inkomsten' | 'uitgaven'>('overzicht');
   const [pdfBezig, setPdfBezig] = useState(false);
   const jaar = nu.getFullYear();
-
-  useEffect(() => {
-    if (pakket === 'gratis') {
-      ScreenCapture.preventScreenCaptureAsync();
-    } else {
-      ScreenCapture.allowScreenCaptureAsync();
-    }
-    return () => { ScreenCapture.allowScreenCaptureAsync(); };
-  }, [pakket]);
 
   function filterTransacties() {
     return transacties.filter(t => {

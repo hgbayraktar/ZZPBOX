@@ -29,7 +29,7 @@ import { isoNaarNl, nlNaarIso, vandaagIso, vandaagNl, vandaagPlusDagen } from '.
 import type { OfferteRegel } from '../../types';
 
 function escHtml(s: string | null | undefined): string {
-  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
@@ -56,9 +56,9 @@ function offerteHtml(offerte: any, bedrijf: any): string {
     <tr>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0;">
         <div style="font-weight: 600; color: #1a1a1a;">${escHtml(r.omschrijving)}</div>
-        <div style="font-size: 11px; color: #888; margin-top: 2px;">BTW ${r.btw} — per ${r.eenheid}</div>
+        <div style="font-size: 11px; color: #888; margin-top: 2px;">BTW ${escHtml(r.btw)} — per ${escHtml(r.eenheid)}</div>
       </td>
-      <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #555;">${r.aantal}</td>
+      <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #555;">${escHtml(r.aantal)}</td>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: right; color: #555;">${euro(parseFloat(r.prijs?.replace(',', '.') || '0'))}</td>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: right; font-weight: 600; color: #1a1a1a;">${euro(berekenRegel(r))}</td>
     </tr>
@@ -380,7 +380,7 @@ export default function OffertesScherm() {
                 soort: 'inkomst',
                 categorie: 'Omzet diensten',
                 datum: vandaag,
-                btwTarief: btw21 > 0 ? '21%' : btw9 > 0 ? '9%' : '0%',
+                btwTarief: btw21 > 0 && btw9 > 0 ? 'Gemengd' : btw21 > 0 ? '21%' : btw9 > 0 ? '9%' : '0%',
                 btwBedrag: totaalBtwBedrag.toFixed(2),
                 factuurNummer: factuurNr,
               });

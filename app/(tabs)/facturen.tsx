@@ -20,7 +20,7 @@ import type { Factuur, FactuurRegel } from '../../types';
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
 
 function escHtml(s: string | null | undefined): string {
-  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 
@@ -187,7 +187,7 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
           <div class="notities-tekst">${escHtml(factuur.notities)}</div>
         </div>` : ''}
         <div class="footer">
-          <div class="footer-links">${bedrijf.bedrijfsnaam || ''}<br>${bedrijf.email || ''}<br>${bedrijf.website || ''}</div>
+          <div class="footer-links">${escHtml(bedrijf.bedrijfsnaam)}<br>${escHtml(bedrijf.email)}<br>${escHtml(bedrijf.website)}</div>
           <div class="footer-rechts">Gemaakt met ZZPBox</div>
         </div>
       </div>
@@ -603,7 +603,7 @@ export default function FacturenScherm() {
       <StatusBar barStyle="light-content" backgroundColor="#1A1A1A" />
 
       <View style={stijlen.koptekst}>
-        <TouchableOpacity onPress={() => router.push('/(tabs)/instellingen')}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Text style={stijlen.terugTekst}>← Terug</Text>
         </TouchableOpacity>
         <Text style={stijlen.koptekstTitel}>Facturen</Text>
