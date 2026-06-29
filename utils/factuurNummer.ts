@@ -69,6 +69,12 @@ export async function nieuwOfferteNummer(uid: string): Promise<string> {
 
 export async function setOfferteStartNummer(uid: string, startNummer: number): Promise<void> {
   const tellerRef = doc(db, 'gebruikers', uid, 'tellers', 'offertes');
-  // Set to startNummer - 1 so next call produces startNummer
   await setDoc(tellerRef, { laatsteNummer: startNummer - 1 });
+}
+
+export async function setFactuurStartNummer(uid: string, startNummer: number): Promise<void> {
+  const jaar = new Date().getFullYear();
+  const tellerRef = doc(db, 'gebruikers', uid, 'tellers', 'facturen');
+  // jaar meezetten zodat nieuwFactuurNummer geen bootstrap-scan doet
+  await setDoc(tellerRef, { jaar, laatsteNummer: startNummer - 1 });
 }

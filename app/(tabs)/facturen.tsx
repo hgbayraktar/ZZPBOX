@@ -13,7 +13,7 @@ import {
   View
 } from 'react-native';
 import { gebruikBedrijf, gebruikFacturen, gebruikGebruiker, gebruikKlanten, gebruikPakket, gebruikProducten, gebruikTransacties } from '../../hooks/gebruikData';
-import { nieuwFactuurNummer } from '../../utils/factuurNummer';
+import { nieuwFactuurNummer, setFactuurStartNummer } from '../../utils/factuurNummer';
 import { isoNaarNl, nlNaarIso, vandaagNl, vandaagPlusDagen } from '../../utils/datum';
 import type { Factuur, FactuurRegel } from '../../types';
 
@@ -223,6 +223,8 @@ export default function FacturenScherm() {
   const [totDatum, setTotDatum] = useState('');
   const [isCreditnota, setIsCreditnota] = useState(false);
   const [origineelFactuurNummer, setOrigineelFactuurNummer] = useState('');
+  const [nummerModalZichtbaar, setNummerModalZichtbaar] = useState(false);
+  const [startNummerInvoer, setStartNummerInvoer] = useState('1');
 
   const [factuurNummer, setFactuurNummer] = useState('');
   const [klantNaam, setKlantNaam] = useState('');
@@ -571,6 +573,23 @@ export default function FacturenScherm() {
     return '#888';
   }
 
+  async function startNummerInstellen() {
+    const num = parseInt(startNummerInvoer);
+    if (isNaN(num) || num < 1) {
+      Alert.alert('Ongeldig nummer', 'Voer een geldig startnummer in (minimaal 1).');
+      return;
+    }
+    if (!gebruiker) return;
+    try {
+      await setFactuurStartNummer(gebruiker.uid, num);
+      setNummerModalZichtbaar(false);
+      const jaar = new Date().getFullYear();
+      Alert.alert('Ingesteld', `Volgende factuur krijgt nummer ${jaar}-${String(num).padStart(3, '0')}.`);
+    } catch {
+      Alert.alert('Fout', 'Kon startnummer niet instellen.');
+    }
+  }
+
   function statusLabel(status: string): string {
     if (status === 'betaald') return '✓ Betaald';
     if (status === 'verzonden') return '📤 Verzonden';
@@ -589,7 +608,10 @@ export default function FacturenScherm() {
           <Text style={stijlen.terugTekst}>← Terug</Text>
         </TouchableOpacity>
         <Text style={stijlen.koptekstTitel}>Facturen</Text>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => setNummerModalZichtbaar(true)}>
+            <Text style={stijlen.instellingenKnop}>⚙️</Text>
+          </TouchableOpacity>
           {exportBezig ? (
             <ActivityIndicator color="#C9A84C" />
           ) : (
@@ -1218,6 +1240,33 @@ export default function FacturenScherm() {
         )}
       </Modal>
 
+      {/* STARTNUMMER MODAL */}
+      <Modal visible={nummerModalZichtbaar} animationType="fade" transparent onRequestClose={() => setNummerModalZichtbaar(false)}>
+        <View style={stijlen.nummerOverlay}>
+          <View style={stijlen.nummerKaart}>
+            <Text style={stijlen.nummerTitel}>Factuurnummer instellen</Text>
+            <Text style={stijlen.nummerOndertitel}>Handig als u al facturen heeft in een ander systeem (bijv. Excel). Voer het nummer in waarvan de volgende factuur moet beginnen.</Text>
+            <TextInput
+              style={stijlen.nummerInvoer}
+              value={startNummerInvoer}
+              onChangeText={setStartNummerInvoer}
+              keyboardType="number-pad"
+              placeholder="bijv. 6359"
+              placeholderTextColor="#444"
+            />
+            <Text style={stijlen.nummerPreview}>
+              Preview: {new Date().getFullYear()}-{String(parseInt(startNummerInvoer) || 1).padStart(3, '0')}
+            </Text>
+            <TouchableOpacity style={stijlen.nummerKnop} onPress={startNummerInstellen}>
+              <Text style={stijlen.nummerKnopTekst}>Instellen</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setNummerModalZichtbaar(false)} style={{ marginTop: 12, alignItems: 'center' }}>
+              <Text style={{ color: '#666', fontSize: 14 }}>Annuleren</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* EXPORT MODAL */}
       <Modal visible={exportModalZichtbaar} animationType="slide" transparent>
         <View style={stijlen.exportOverlay}>
@@ -1456,4 +1505,13 @@ const stijlen = StyleSheet.create({
   datumInput: { backgroundColor: '#242424', borderWidth: 1, borderColor: '#333', borderRadius: 10, padding: 12, color: '#fff', fontSize: 14 },
   exportKnopGroot: { backgroundColor: '#C9A84C', borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 16 },
   exportKnopGrootTekst: { color: '#1A1A1A', fontSize: 15, fontWeight: '800' },
+  instellingenKnop: { fontSize: 20 },
+  nummerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  nummerKaart: { backgroundColor: '#222', borderRadius: 16, padding: 24, width: '100%' },
+  nummerTitel: { color: '#fff', fontSize: 17, fontWeight: '800', marginBottom: 8 },
+  nummerOndertitel: { color: '#888', fontSize: 13, marginBottom: 16, lineHeight: 18 },
+  nummerInvoer: { backgroundColor: '#2a2a2a', color: '#fff', borderRadius: 10, padding: 14, fontSize: 16, marginBottom: 8 },
+  nummerPreview: { color: '#888', fontSize: 12, marginBottom: 16 },
+  nummerKnop: { backgroundColor: '#FF6B00', borderRadius: 10, padding: 14, alignItems: 'center' },
+  nummerKnopTekst: { color: '#1A1A1A', fontSize: 15, fontWeight: '800' },
 });
