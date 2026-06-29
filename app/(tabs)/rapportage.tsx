@@ -14,7 +14,7 @@ import { gebruikBedrijf, gebruikPakket, gebruikTransacties } from '../../hooks/g
 import { isoNaarNl } from '../../utils/datum';
 
 function escHtml(s: string | null | undefined): string {
-  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 type PeriodeSoort = 'jaar' | 'kwartaal' | 'maand';
@@ -478,7 +478,7 @@ export default function RapportageScherm() {
                             <Text style={stijlen.transactieRegelTekst}>{t.omschrijving}</Text>
                             <Text style={stijlen.transactieRegelDatum}>{isoNaarNl(t.datum)} · BTW {t.btwTarief}</Text>
                           </View>
-                          <Text style={stijlen.transactieRegelBedragGroen}>{euro(parseFloat(t.bedrag))}</Text>
+                          <Text style={stijlen.transactieRegelBedragGroen}>{euro(parseFloat(t.bedrag || '0'))}</Text>
                         </View>
                       ))}
                     </View>
@@ -518,7 +518,7 @@ export default function RapportageScherm() {
                             <Text style={stijlen.transactieRegelTekst}>{t.omschrijving}</Text>
                             <Text style={stijlen.transactieRegelDatum}>{isoNaarNl(t.datum)}</Text>
                           </View>
-                          <Text style={stijlen.transactieRegelBedragRood}>-{euro(parseFloat(t.bedrag))}</Text>
+                          <Text style={stijlen.transactieRegelBedragRood}>-{euro(parseFloat(t.bedrag || '0'))}</Text>
                         </View>
                       ))}
                     </View>

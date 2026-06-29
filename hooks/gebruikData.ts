@@ -111,7 +111,8 @@ export function gebruikCategorieën() {
           setCategorieën(gegevens);
           setLaden(false);
         }
-      }
+      },
+      (_err) => { setCategorieën([]); setLaden(false); }
     );
     return afmelden;
   }, [gebruiker]);

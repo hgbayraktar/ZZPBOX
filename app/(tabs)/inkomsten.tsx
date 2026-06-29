@@ -16,7 +16,7 @@ import { gebruikCategorieën, gebruikGebruiker, gebruikPakket, gebruikTransactie
 import { isoNaarNl } from '../../utils/datum';
 
 function escHtml(s: string | null | undefined): string {
-  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 const BTW_OPTIES = ['21%', '9%', '0%', 'Verlegd', 'Vrijgesteld'];
@@ -54,8 +54,8 @@ export default function TransactiesScherm() {
   const vandaag = new Date().toISOString().split('T')[0];
   const dezeMaand = new Date().toISOString().slice(0, 7);
 
-  const dagTransacties = transacties.filter(t => t.aangemaaktOp?.startsWith(vandaag));
-  const maandTransacties = transacties.filter(t => t.aangemaaktOp?.startsWith(dezeMaand));
+  const dagTransacties = transacties.filter(t => t.datum?.startsWith(vandaag));
+  const maandTransacties = transacties.filter(t => t.datum?.startsWith(dezeMaand));
 
   const dagLimiet = pakket === 'gratis' ? 3 : Infinity;
   const maandLimiet = pakket === 'gratis' ? 20 : Infinity;
@@ -179,7 +179,7 @@ export default function TransactiesScherm() {
         <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${escHtml(t.categorie) || '-'}</td>
         <td style="padding:8px;border-bottom:1px solid #f0f0f0;">${escHtml(t.btwTarief)}</td>
         <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:right;color:${t.soort === 'inkomst' ? '#4CAF50' : '#f44336'};">
-          ${t.soort === 'inkomst' ? '+' : '-'}${euro(parseFloat(t.bedrag))}
+          ${t.soort === 'inkomst' ? '+' : '-'}${euro(parseFloat(t.bedrag || '0'))}
         </td>
         <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:right;color:#888;">${euro(parseFloat(t.btwBedrag || '0'))}</td>
       </tr>
@@ -323,7 +323,7 @@ export default function TransactiesScherm() {
                     </View>
                     <View style={stijlen.transactieRechts}>
                       <Text style={[stijlen.transactieBedrag, { color: t.soort === 'inkomst' ? '#4CAF50' : '#f44336' }]}>
-                        {t.soort === 'inkomst' ? '+' : '-'}{euro(parseFloat(t.bedrag))}
+                        {t.soort === 'inkomst' ? '+' : '-'}{euro(parseFloat(t.bedrag || '0'))}
                       </Text>
                       <Text style={stijlen.transactieBtw}>BTW: {euro(parseFloat(t.btwBedrag || '0'))}</Text>
                     </View>

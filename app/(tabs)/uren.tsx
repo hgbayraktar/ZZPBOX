@@ -12,9 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { addDoc, collection } from 'firebase/firestore';
-import { db } from '../../constants/firebase';
-import { gebruikFacturen, gebruikGebruiker, gebruikKlanten, gebruikPakket, gebruikUren } from '../../hooks/gebruikData';
+import { gebruikFacturen, gebruikGebruiker, gebruikKlanten, gebruikPakket, gebruikTransacties, gebruikUren } from '../../hooks/gebruikData';
 import { nieuwFactuurNummer } from '../../utils/factuurNummer';
 import type { Klant } from '../../types';
 
@@ -73,6 +71,7 @@ export default function UrenScherm() {
   const { klanten } = gebruikKlanten();
   const { uren, toevoegen, bijwerken, verwijderen } = gebruikUren();
   const { facturen, toevoegen: factuurToevoegen } = gebruikFacturen();
+  const { toevoegen: transactieToevoegen } = gebruikTransacties();
 
   // Timer state
   const [timerActief, setTimerActief] = useState(false);
@@ -187,16 +186,21 @@ export default function UrenScherm() {
     const startDate = new Date(`${handDatum}T${handStart}:00`);
     const eindDate = new Date(`${handDatum}T${handEind}:00`);
 
-    await toevoegen({
-      datum: handDatum,
-      klantId: handKlantId || undefined,
-      klantNaam,
-      omschrijving: handOmschrijving || 'Werkzaamheden',
-      startTijd: startDate.toISOString(),
-      eindTijd: eindDate.toISOString(),
-      duurMinuten,
-      status: 'geregistreerd',
-    });
+    try {
+      await toevoegen({
+        datum: handDatum,
+        klantId: handKlantId || undefined,
+        klantNaam,
+        omschrijving: handOmschrijving || 'Werkzaamheden',
+        startTijd: startDate.toISOString(),
+        eindTijd: eindDate.toISOString(),
+        duurMinuten,
+        status: 'geregistreerd',
+      });
+    } catch {
+      Alert.alert('Fout', 'Opslaan mislukt. Controleer uw verbinding en probeer opnieuw.');
+      return;
+    }
 
     setHandmatigModal(false);
     setKlantPickerVoor(null);
@@ -233,15 +237,20 @@ export default function UrenScherm() {
     const startDate = new Date(`${editDatum}T${editStart}:00`);
     const eindDate = new Date(`${editDatum}T${editEind}:00`);
 
-    await bijwerken(editId, {
-      datum: editDatum,
-      klantId: editKlantId || null,
-      klantNaam,
-      omschrijving: editOmschrijving || 'Werkzaamheden',
-      startTijd: startDate.toISOString(),
-      eindTijd: eindDate.toISOString(),
-      duurMinuten,
-    });
+    try {
+      await bijwerken(editId, {
+        datum: editDatum,
+        klantId: editKlantId || null,
+        klantNaam,
+        omschrijving: editOmschrijving || 'Werkzaamheden',
+        startTijd: startDate.toISOString(),
+        eindTijd: eindDate.toISOString(),
+        duurMinuten,
+      });
+    } catch {
+      Alert.alert('Fout', 'Opslaan mislukt. Controleer uw verbinding en probeer opnieuw.');
+      return;
+    }
 
     setEditModal(false);
     setKlantPickerVoor(null);
@@ -334,19 +343,16 @@ export default function UrenScherm() {
       status: 'concept',
     });
 
-    if (gebruiker) {
-      await addDoc(collection(db, 'gebruikers', gebruiker.uid, 'transacties'), {
-        soort: 'inkomst',
-        omschrijving: `${nummer} — ${klantNaamVan(klant) || 'Klant'}`,
-        bedrag: totaal.toFixed(2),
-        btwBedrag: btwBedrag.toFixed(2),
-        datum: nu.toISOString().split('T')[0],
-        categorie: 'Omzet diensten',
-        btwTarief: factuurBtw,
-        factuurNummer: nummer,
-        aangemaaktOp: new Date().toISOString(),
-      });
-    }
+    await transactieToevoegen({
+      soort: 'inkomst',
+      omschrijving: `${nummer} — ${klantNaamVan(klant) || 'Klant'}`,
+      bedrag: totaal.toFixed(2),
+      btwBedrag: btwBedrag.toFixed(2),
+      datum: nu.toISOString().split('T')[0],
+      categorie: 'Omzet diensten',
+      btwTarief: factuurBtw,
+      factuurNummer: nummer,
+    });
 
     for (const u of ongefactureerd) {
       await bijwerken(u.id, { status: 'gefactureerd', factuurNummer: nummer });

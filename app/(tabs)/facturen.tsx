@@ -47,9 +47,9 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
     <tr>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0;">
         <div style="font-weight: 600; color: #1a1a1a;">${escHtml(r.omschrijving)}</div>
-        <div style="font-size: 11px; color: #888; margin-top: 2px;">BTW ${r.btw} — per ${r.eenheid}</div>
+        <div style="font-size: 11px; color: #888; margin-top: 2px;">BTW ${escHtml(r.btw)} — per ${escHtml(r.eenheid)}</div>
       </td>
-      <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #555;">${r.aantal}</td>
+      <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #555;">${escHtml(r.aantal)}</td>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: right; color: #555;">${euro(parseFloat(r.prijs?.replace(',', '.') || '0'))}</td>
       <td style="padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: right; font-weight: 600; color: #1a1a1a;">${isCredit ? '-' : ''}${euro(berekenRegel(r))}</td>
     </tr>
@@ -126,7 +126,7 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
           </div>
           <div class="factuur-blok">
             <div class="factuur-label">${isCredit ? 'CREDITNOTA' : 'FACTUUR'}</div>
-            <div class="factuur-nummer">${factuur.factuurNummer}</div>
+            <div class="factuur-nummer">${escHtml(factuur.factuurNummer)}</div>
             <div style="margin-top: 8px;">
               <span class="status-badge status-${isCredit ? 'creditnota' : (factuur.status || 'concept')}">
                 ${isCredit ? '↩ Creditnota' : factuur.status === 'betaald' ? '✓ Betaald' : factuur.status === 'verzonden' ? '📤 Verzonden' : '📝 Concept'}
@@ -137,7 +137,7 @@ function factuurHtml(factuur: any, bedrijf: any, logo: string | null): string {
         ${isCredit ? `
         <div class="credit-banner">
           <div class="credit-banner-titel">↩ CREDITNOTA</div>
-          <div class="credit-banner-tekst">Dit is een creditnota${factuur.origineelFactuurNummer ? ' voor factuur ' + factuur.origineelFactuurNummer : ''}. Het bedrag wordt gecrediteerd aan de klant.</div>
+          <div class="credit-banner-tekst">Dit is een creditnota${factuur.origineelFactuurNummer ? ' voor factuur ' + escHtml(factuur.origineelFactuurNummer) : ''}. Het bedrag wordt gecrediteerd aan de klant.</div>
         </div>` : ''}
         <hr class="scheidingslijn-goud">
         <div class="datum-rij">
@@ -368,7 +368,7 @@ export default function FacturenScherm() {
         omschrijving: isCreditnota
           ? `Creditnota ${factuurNummer} — ${klantNaam}`
           : `Factuur ${factuurNummer} — ${klantNaam}`,
-        bedrag: totaal.toFixed(2),
+        bedrag: subtotaal.toFixed(2),
         soort: isCreditnota ? 'uitgave' : 'inkomst',
         categorie: isCreditnota ? 'Overige kosten' : 'Omzet diensten',
         datum: nlNaarIso(datum),
@@ -554,7 +554,6 @@ export default function FacturenScherm() {
           s + berekenRegelTotaal(r) + berekenBtw(r), 0) || 0;
         if (klantMap[f.klantNaam]) {
           klantMap[f.klantNaam].totaalGefactureerd -= creditBedrag;
-          klantMap[f.klantNaam].totaalBetaald -= creditBedrag;
         }
       });
 

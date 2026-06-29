@@ -127,7 +127,7 @@ function offerteHtml(offerte: any, bedrijf: any): string {
           </div>
           <div class="offerte-blok">
             <div class="offerte-label">OFFERTE</div>
-            <div class="offerte-nummer">${offerte.offerteNummer}</div>
+            <div class="offerte-nummer">${escHtml(offerte.offerteNummer)}</div>
             <div style="margin-top: 8px; font-size: 11px; color: #888; font-weight: 600;">
               ${offerte.status === 'geaccepteerd' ? '✓ Geaccepteerd' : offerte.status === 'verzonden' ? '📤 Verzonden' : offerte.status === 'verlopen' ? '⏰ Verlopen' : '📝 Concept'}
             </div>
@@ -137,7 +137,7 @@ function offerteHtml(offerte: any, bedrijf: any): string {
         <div class="datum-rij">
           <div class="datum-item"><label>DATUM</label><span>${isoNaarNl(offerte.datum)}</span></div>
           <div class="datum-item"><label>GELDIG TOT</label><span>${isoNaarNl(offerte.geldigTot)}</span></div>
-          <div class="datum-item"><label>NUMMER</label><span>${offerte.offerteNummer}</span></div>
+          <div class="datum-item"><label>NUMMER</label><span>${escHtml(offerte.offerteNummer)}</span></div>
         </div>
         <div class="klant-sectie">
           <div class="klant-label">OFFERTE VOOR</div>
@@ -372,11 +372,11 @@ export default function OffertesScherm() {
               const btw21 = regelsBtw21.reduce((s: number, r: OfferteRegel) => s + parseFloat(r.aantal || '0') * parseFloat(r.prijs?.replace(',', '.') || '0') * 0.21, 0);
               const btw9 = regelsBtw9.reduce((s: number, r: OfferteRegel) => s + parseFloat(r.aantal || '0') * parseFloat(r.prijs?.replace(',', '.') || '0') * 0.09, 0);
               const totaalBtwBedrag = btw21 + btw9;
-              const totaalBedrag = regelsVoorFactuur.reduce((s: number, r: OfferteRegel) => s + parseFloat(r.aantal || '0') * parseFloat(r.prijs?.replace(',', '.') || '0'), 0) + totaalBtwBedrag;
+              const subtotaalBedrag = regelsVoorFactuur.reduce((s: number, r: OfferteRegel) => s + parseFloat(r.aantal || '0') * parseFloat(r.prijs?.replace(',', '.') || '0'), 0);
 
               await transactieToevoegen({
                 omschrijving: `Factuur ${factuurNr} — ${offerte.klantNaam}`,
-                bedrag: totaalBedrag.toFixed(2),
+                bedrag: subtotaalBedrag.toFixed(2),
                 soort: 'inkomst',
                 categorie: 'Omzet diensten',
                 datum: vandaag,
