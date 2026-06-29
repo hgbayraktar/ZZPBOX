@@ -201,7 +201,8 @@ export function gebruikTransacties() {
         const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Transactie[];
         setTransacties(gegevens);
         setLaden(false);
-      }
+      },
+      (_err) => { setTransacties([]); setLaden(false); }
     );
     return afmelden;
   }, [gebruiker]);
@@ -235,7 +236,8 @@ export function gebruikKlanten() {
         const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Klant[];
         setKlanten(gegevens);
         setLaden(false);
-      }
+      },
+      (_err) => { setKlanten([]); setLaden(false); }
     );
     return afmelden;
   }, [gebruiker]);
@@ -274,7 +276,8 @@ export function gebruikProducten() {
         const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Product[];
         setProducten(gegevens);
         setLaden(false);
-      }
+      },
+      (_err) => { setProducten([]); setLaden(false); }
     );
     return afmelden;
   }, [gebruiker]);
@@ -313,7 +316,8 @@ export function gebruikFacturen() {
         const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Factuur[];
         setFacturen(gegevens);
         setLaden(false);
-      }
+      },
+      (_err) => { setFacturen([]); setLaden(false); }
     );
     return afmelden;
   }, [gebruiker]);
@@ -352,7 +356,8 @@ export function gebruikOffertes() {
         const gegevens = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Offerte[];
         setOffertes(gegevens);
         setLaden(false);
-      }
+      },
+      (_err) => { setOffertes([]); setLaden(false); }
     );
     return afmelden;
   }, [gebruiker]);
@@ -433,7 +438,8 @@ export function gebruikBedrijf() {
       (snap) => {
         if (snap.exists()) setBedrijf(snap.data() as Bedrijf);
         setLaden(false);
-      }
+      },
+      (_err) => { setLaden(false); }
     );
     return afmelden;
   }, [gebruiker]);

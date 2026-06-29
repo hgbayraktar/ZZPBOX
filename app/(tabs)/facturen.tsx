@@ -546,7 +546,7 @@ export default function FacturenScherm() {
         }
       });
 
-    // Deduct creditnota amounts from totaalGefactureerd
+    // Deduct creditnota amounts from both totaalGefactureerd and totaalBetaald
     facturen
       .filter(f => f.soort === 'creditnota')
       .forEach(f => {
@@ -554,6 +554,7 @@ export default function FacturenScherm() {
           s + berekenRegelTotaal(r) + berekenBtw(r), 0) || 0;
         if (klantMap[f.klantNaam]) {
           klantMap[f.klantNaam].totaalGefactureerd -= creditBedrag;
+          klantMap[f.klantNaam].totaalBetaald -= creditBedrag;
         }
       });
 

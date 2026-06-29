@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, getDoc, runTransaction, setDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, runTransaction, setDoc } from 'firebase/firestore';
 import { db } from '../constants/firebase';
 
 // getDocs bootstrap runs OUTSIDE runTransaction to avoid non-transactional reads inside a transaction
@@ -20,19 +20,13 @@ async function bootstrapMax(uid: string, collectie: string, jaarFilter: number |
 
 export async function nieuwFactuurNummer(uid: string, isCredit: boolean): Promise<string> {
   const tellerRef = doc(db, 'gebruikers', uid, 'tellers', 'facturen');
-
-  const vooraf = await getDoc(tellerRef);
-  let bootstrapWaarde = 0;
-  if (!vooraf.exists()) {
-    bootstrapWaarde = await bootstrapMax(uid, 'facturen', null);
-  }
+  const bootstrapWaarde = await bootstrapMax(uid, 'facturen', null);
 
   const volgend = await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(tellerRef);
-    let laatste = bootstrapWaarde;
-    if (snap.exists()) {
-      laatste = Math.max(snap.data().laatsteNummer ?? 0, bootstrapWaarde);
-    }
+    const laatste = snap.exists()
+      ? Math.max(snap.data().laatsteNummer ?? 0, bootstrapWaarde)
+      : bootstrapWaarde;
     const volgende = laatste + 1;
     transaction.set(tellerRef, { laatsteNummer: volgende });
     return volgende;
@@ -43,19 +37,13 @@ export async function nieuwFactuurNummer(uid: string, isCredit: boolean): Promis
 
 export async function nieuwOfferteNummer(uid: string): Promise<string> {
   const tellerRef = doc(db, 'gebruikers', uid, 'tellers', 'offertes');
-
-  const vooraf = await getDoc(tellerRef);
-  let bootstrapWaarde = 0;
-  if (!vooraf.exists()) {
-    bootstrapWaarde = await bootstrapMax(uid, 'offertes', null);
-  }
+  const bootstrapWaarde = await bootstrapMax(uid, 'offertes', null);
 
   const volgend = await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(tellerRef);
-    let laatste = bootstrapWaarde;
-    if (snap.exists()) {
-      laatste = Math.max(snap.data().laatsteNummer ?? 0, bootstrapWaarde);
-    }
+    const laatste = snap.exists()
+      ? Math.max(snap.data().laatsteNummer ?? 0, bootstrapWaarde)
+      : bootstrapWaarde;
     const volgende = laatste + 1;
     transaction.set(tellerRef, { laatsteNummer: volgende });
     return volgende;
