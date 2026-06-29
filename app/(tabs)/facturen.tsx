@@ -583,8 +583,7 @@ export default function FacturenScherm() {
     try {
       await setFactuurStartNummer(gebruiker.uid, num);
       setNummerModalZichtbaar(false);
-      const jaar = new Date().getFullYear();
-      Alert.alert('Ingesteld', `Volgende factuur krijgt nummer ${jaar}-${String(num).padStart(3, '0')}.`);
+      Alert.alert('Ingesteld', `Volgende factuur krijgt nummer ${num}.`);
     } catch {
       Alert.alert('Fout', 'Kon startnummer niet instellen.');
     }
@@ -1255,7 +1254,7 @@ export default function FacturenScherm() {
               placeholderTextColor="#444"
             />
             <Text style={stijlen.nummerPreview}>
-              Preview: {new Date().getFullYear()}-{String(parseInt(startNummerInvoer) || 1).padStart(3, '0')}
+              Preview: {parseInt(startNummerInvoer) || 1}
             </Text>
             <TouchableOpacity style={stijlen.nummerKnop} onPress={startNummerInstellen}>
               <Text style={stijlen.nummerKnopTekst}>Instellen</Text>

@@ -19,29 +19,26 @@ async function bootstrapMax(uid: string, collectie: string, jaarFilter: number |
 }
 
 export async function nieuwFactuurNummer(uid: string, isCredit: boolean): Promise<string> {
-  const jaar = new Date().getFullYear();
   const tellerRef = doc(db, 'gebruikers', uid, 'tellers', 'facturen');
 
-  // Check outside transaction if bootstrap needed
   const vooraf = await getDoc(tellerRef);
   let bootstrapWaarde = 0;
-  if (!vooraf.exists() || vooraf.data().jaar !== jaar) {
-    bootstrapWaarde = await bootstrapMax(uid, 'facturen', jaar);
+  if (!vooraf.exists()) {
+    bootstrapWaarde = await bootstrapMax(uid, 'facturen', null);
   }
 
   const volgend = await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(tellerRef);
     let laatste = bootstrapWaarde;
-    if (snap.exists() && snap.data().jaar === jaar) {
+    if (snap.exists()) {
       laatste = Math.max(snap.data().laatsteNummer ?? 0, bootstrapWaarde);
     }
     const volgende = laatste + 1;
-    transaction.set(tellerRef, { jaar, laatsteNummer: volgende });
+    transaction.set(tellerRef, { laatsteNummer: volgende });
     return volgende;
   });
 
-  const volgnummer = String(volgend).padStart(3, '0');
-  return isCredit ? `CN-${jaar}-${volgnummer}` : `${jaar}-${volgnummer}`;
+  return isCredit ? `CN-${volgend}` : `${volgend}`;
 }
 
 export async function nieuwOfferteNummer(uid: string): Promise<string> {
@@ -73,8 +70,6 @@ export async function setOfferteStartNummer(uid: string, startNummer: number): P
 }
 
 export async function setFactuurStartNummer(uid: string, startNummer: number): Promise<void> {
-  const jaar = new Date().getFullYear();
   const tellerRef = doc(db, 'gebruikers', uid, 'tellers', 'facturen');
-  // jaar meezetten zodat nieuwFactuurNummer geen bootstrap-scan doet
-  await setDoc(tellerRef, { jaar, laatsteNummer: startNummer - 1 });
+  await setDoc(tellerRef, { laatsteNummer: startNummer - 1 });
 }
