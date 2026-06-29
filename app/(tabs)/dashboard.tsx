@@ -204,7 +204,7 @@ export default function DashboardScherm() {
           ))
         )}
 
-        <TouchableOpacity style={stijlen.handleidingKnop} onPress={() => router.push('/handleiding' as any)} activeOpacity={0.8}>
+        <TouchableOpacity style={stijlen.handleidingKnop} onPress={() => router.push('/handleiding')} activeOpacity={0.8}>
           <Text style={stijlen.handleidingIcoon}>📘</Text>
           <View style={{ flex: 1 }}>
             <Text style={stijlen.handleidingTitel}>Handleiding</Text>
