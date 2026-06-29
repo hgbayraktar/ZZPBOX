@@ -35,6 +35,7 @@ function AppInhoud() {
       <Stack.Screen name="voorwaarden" />
       <Stack.Screen name="privacybeleid" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="handleiding" />
     </Stack>
   );
 }

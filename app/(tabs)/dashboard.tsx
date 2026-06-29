@@ -204,6 +204,15 @@ export default function DashboardScherm() {
           ))
         )}
 
+        <TouchableOpacity style={stijlen.handleidingKnop} onPress={() => router.push('/handleiding' as any)} activeOpacity={0.8}>
+          <Text style={stijlen.handleidingIcoon}>📘</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={stijlen.handleidingTitel}>Handleiding</Text>
+            <Text style={stijlen.handleidingOndertitel}>Nieuw? Lees hier hoe ZZPBox werkt</Text>
+          </View>
+          <Text style={stijlen.handleidingPijl}>→</Text>
+        </TouchableOpacity>
+
         {pakket === 'gratis' && (
           <View style={stijlen.limietKaart}>
             <View style={stijlen.limietKoptekst}>
@@ -338,6 +347,11 @@ const stijlen = StyleSheet.create({
   limietVoortgang: { height: 6, backgroundColor: '#C9A84C', borderRadius: 3 },
   upgradeKnop: { backgroundColor: '#FF6B00', paddingVertical: 12, borderRadius: 10, alignItems: 'center', marginTop: 4 },
   upgradeKnopTekst: { color: '#1A1A1A', fontSize: 13, fontWeight: '800' },
+  handleidingKnop: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#222', borderRadius: 14, padding: 16, marginBottom: 16, gap: 12, borderWidth: 1, borderColor: '#2a2a2a' },
+  handleidingIcoon: { fontSize: 28 },
+  handleidingTitel: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
+  handleidingOndertitel: { color: '#666', fontSize: 12, marginTop: 2 },
+  handleidingPijl: { color: '#C9A84C', fontSize: 18, fontWeight: '600' },
   reclameBanner: { position: 'absolute', bottom: 70, left: 0, right: 0, alignItems: 'center', backgroundColor: '#111111', borderTopWidth: 1, borderTopColor: '#333' },
   ondersteNavigatie: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#242424', flexDirection: 'row', paddingBottom: 28, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#333' },
   navigatieItem: { flex: 1, alignItems: 'center', gap: 4 },
