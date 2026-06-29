@@ -344,6 +344,7 @@ export default function FacturenScherm() {
   }
 
   async function factuurOpslaan() {
+    if (pakket === 'gratis') return;
     if (!klantNaam || regels.some(r => !r.omschrijving || !r.prijs)) {
       Alert.alert('Verplichte velden', 'Vul klantnaam en alle regelomschrijvingen en prijzen in.');
       return;

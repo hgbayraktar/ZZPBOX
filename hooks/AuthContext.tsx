@@ -1,21 +1,20 @@
-import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
-import { auth, db } from '../constants/firebase';
+import { auth } from '../constants/firebase';
 
 type AuthContextType = {
   gebruiker: User | null;
   laden: boolean;
   pakket: 'gratis' | 'premium';
-  updatePakket: (p: 'gratis' | 'premium') => void;
+  refreshPakket: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   gebruiker: null,
   laden: true,
   pakket: 'gratis',
-  updatePakket: () => {},
+  refreshPakket: async () => {},
 });
 
 const ENTITLEMENT_ID = 'ZzpBox Pro';
@@ -56,15 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const info = await Purchases.getCustomerInfo();
         if (active) setPakket(isPremium(info) ? 'premium' : 'gratis');
       } catch {
-        // Firebase fallback
-        try {
-          const snap = await getDoc(doc(db, 'gebruikers', gebruiker!.uid));
-          if (active && snap.exists() && snap.data()?.pakket === 'premium') {
-            setPakket('premium');
-          }
-        } catch {
-          if (active) setPakket('gratis');
-        }
+        // RevenueCat unavailable — safe default is gratis, never grant premium without verification
+        if (active) setPakket('gratis');
       }
     }
 
@@ -83,8 +75,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [gebruiker]);
 
+  async function refreshPakket(): Promise<void> {
+    try {
+      const info = await Purchases.getCustomerInfo();
+      setPakket(isPremium(info) ? 'premium' : 'gratis');
+    } catch {
+      // Do not downgrade on transient failure — keep current state
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ gebruiker, laden, pakket, updatePakket: setPakket }}>
+    <AuthContext.Provider value={{ gebruiker, laden, pakket, refreshPakket }}>
       {children}
     </AuthContext.Provider>
   );

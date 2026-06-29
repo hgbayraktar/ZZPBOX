@@ -312,6 +312,7 @@ export default function OffertesScherm() {
   function euro(b: number) { return `€ ${b.toFixed(2).replace('.', ',')}`; }
 
   async function offerteOpslaan() {
+    if (pakket === 'gratis') return;
     if (!klantNaam || regels.some(r => !r.omschrijving || !r.prijs)) {
       Alert.alert('Verplichte velden', 'Vul klantnaam en alle regelomschrijvingen en prijzen in.');
       return;

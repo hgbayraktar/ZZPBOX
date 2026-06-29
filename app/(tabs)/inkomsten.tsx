@@ -106,6 +106,18 @@ export default function TransactiesScherm() {
       Alert.alert('Verplichte velden', 'Vul omschrijving en bedrag in.');
       return;
     }
+    if (pakket === 'gratis') {
+      if (dagTransacties.length >= dagLimiet) {
+        setModalZichtbaar(false);
+        Alert.alert('Daglimiet bereikt', 'Maximum van 3 invoeren per dag bereikt.');
+        return;
+      }
+      if (maandTransacties.length >= maandLimiet) {
+        setModalZichtbaar(false);
+        Alert.alert('Maandlimiet bereikt', 'Maximum van 20 invoeren per maand bereikt.');
+        return;
+      }
+    }
     const b = parseFloat(bedrag.replace(',', '.'));
     if (isNaN(b) || b <= 0) {
       Alert.alert('Ongeldig bedrag', 'Voer een geldig bedrag in, bijvoorbeeld 125 of 99,50.');

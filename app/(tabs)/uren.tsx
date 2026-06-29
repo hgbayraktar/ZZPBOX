@@ -172,6 +172,7 @@ export default function UrenScherm() {
   }
 
   async function handmatigOpslaan() {
+    if (pakket === 'gratis') return;
     const startMin = parseHHMM(handStart);
     const eindMin = parseHHMM(handEind);
 
@@ -305,6 +306,7 @@ export default function UrenScherm() {
   }
 
   async function factuurAanmaken() {
+    if (pakket === 'gratis') return;
     const tarief = parseFloat(factuurUurtarief.replace(',', '.'));
     if (!tarief || tarief <= 0) { Alert.alert('Fout', 'Vul een geldig uurtarief in.'); return; }
 

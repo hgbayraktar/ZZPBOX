@@ -1,7 +1,6 @@
-import { auth, db } from '@/constants/firebase';
+import { auth } from '@/constants/firebase';
 import { useAuth } from '@/hooks/AuthContext';
 import { useRouter } from 'expo-router';
-import { doc, setDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import * as ScreenCapture from 'expo-screen-capture';
 import {
@@ -52,7 +51,7 @@ const PREMIUM_VOORDELEN = [
 
 export default function AbonnementScherm() {
   const router = useRouter();
-  const { updatePakket } = useAuth();
+  const { refreshPakket } = useAuth();
   const [geselecteerd, setGeselecteerd] = useState<AbonnementSoort>('kwartaal');
   const [pakketten, setPakketten] = useState<Record<AbonnementSoort, PurchasesPackage | null>>({
     maand: null,
@@ -127,21 +126,14 @@ export default function AbonnementScherm() {
       const { customerInfo } = await Purchases.purchasePackage(pakket);
 
       if (customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined) {
-        updatePakket('premium');
-        if (gebruiker) {
-          try {
-            await setDoc(doc(db, 'gebruikers', gebruiker.uid), { pakket: 'premium' }, { merge: true });
-          } catch (firebaseError) {
-            console.error('Firebase write error:', firebaseError);
-          }
-        }
+        await refreshPakket();
         Alert.alert('✅ Gelukt!', 'U heeft nu Premium toegang!', [
           { text: 'OK', onPress: () => router.back() }
         ]);
       } else {
         const restoreInfo = await Purchases.restorePurchases();
         if (restoreInfo.entitlements.active[ENTITLEMENT_ID] !== undefined) {
-          updatePakket('premium');
+          await refreshPakket();
           Alert.alert('✅ Gelukt!', 'U heeft nu Premium toegang!', [
             { text: 'OK', onPress: () => router.back() }
           ]);
@@ -169,14 +161,7 @@ export default function AbonnementScherm() {
 
       const info = await Purchases.restorePurchases();
       if (info.entitlements.active[ENTITLEMENT_ID] !== undefined) {
-        updatePakket('premium');
-        if (gebruiker) {
-          try {
-            await setDoc(doc(db, 'gebruikers', gebruiker.uid), { pakket: 'premium' }, { merge: true });
-          } catch (dbErr) {
-            console.error('Restore DB error:', dbErr);
-          }
-        }
+        await refreshPakket();
         Alert.alert('✅ Hersteld!', 'Uw Premium abonnement is hersteld.', [
           { text: 'OK', onPress: () => router.back() }
         ]);
