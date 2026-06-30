@@ -13,8 +13,8 @@ function Sectie({ icoon, titel, children }: { icoon: string; titel: string; chil
   );
 }
 
-function Alinea({ tekst }: { tekst: string }) {
-  return <Text style={s.alinea}>{tekst}</Text>;
+function Subkop({ tekst }: { tekst: string }) {
+  return <Text style={s.subkop}>{tekst}</Text>;
 }
 
 function Stap({ nummer, titel, tekst }: { nummer: string; titel: string; tekst: string }) {
@@ -36,6 +36,15 @@ function Tip({ tekst }: { tekst: string }) {
     <View style={s.tip}>
       <Text style={s.tipIcoon}>💡</Text>
       <Text style={s.tipTekst}>{tekst}</Text>
+    </View>
+  );
+}
+
+function Waarschuwing({ tekst }: { tekst: string }) {
+  return (
+    <View style={s.waarschuwing}>
+      <Text style={s.waarschuwingIcoon}>⚠️</Text>
+      <Text style={s.waarschuwingTekst}>{tekst}</Text>
     </View>
   );
 }
@@ -77,85 +86,189 @@ export default function HandleidingScherm() {
           <Text style={s.welkomIcoon}>👋</Text>
           <Text style={s.welkomTitel}>Welkom bij ZZPBox!</Text>
           <Text style={s.welkomTekst}>
-            Fijn dat u er bent. ZZPBox helpt u uw administratie bij te houden zonder gedoe — facturen sturen, uren bijhouden, inkomsten en uitgaven registreren. Alles op één plek, altijd bij de hand.{'\n\n'}Deze handleiding legt stap voor stap uit hoe het werkt. Geen technische taal, gewoon duidelijk.
+            ZZPBox helpt u uw administratie bijhouden zonder gedoe — facturen sturen, uren bijhouden, inkomsten en uitgaven registreren. Alles op één plek.{'\n\n'}
+            Deze handleiding legt stap voor stap uit hoe alles werkt. Begin bovenaan of sla door naar het onderdeel dat u nodig heeft.
           </Text>
         </View>
 
-        <Sectie icoon="🚀" titel="Eerst dit doen — uw bedrijfsgegevens">
-          <Alinea tekst="Voordat u uw eerste factuur verstuurt, is het slim om even uw bedrijfsgegevens in te vullen. Ga naar Instellingen (rechtsboven in het menu) en vul daar uw bedrijfsnaam, KvK-nummer, BTW-nummer en IBAN in." />
-          <Alinea tekst="Waarom? Omdat al deze gegevens automatisch op elke factuur en offerte verschijnen. U hoeft ze maar één keer in te voeren." />
-          <Tip tekst="Vergeet uw IBAN niet — dat is uw rekeningnummer en staat in het betalingsblok van uw factuur. Zonder IBAN weet uw klant niet waar hij naartoe moet betalen." />
+        {/* ─── BEDRIJFSGEGEVENS ─── */}
+        <Sectie icoon="🏢" titel="Stap 1 — Eerst uw bedrijfsgegevens invullen">
+          <Text style={s.intro}>Dit is het allereerste wat u moet doen. Uw gegevens verschijnen automatisch op elke factuur en offerte.</Text>
+          <Stap nummer="1" titel="Open Instellingen" tekst="Tik op het tabblad 'Instellingen' rechtsonder in het menu." />
+          <Stap nummer="2" titel="Tik op 'Bedrijfsprofiel'" tekst="Bovenaan het scherm ziet u uw bedrijfsnaam staan. Tik erop om te bewerken." />
+          <Stap nummer="3" titel="Vul uw bedrijfsnaam in" tekst="Precies zoals die op uw KvK-inschrijving staat." />
+          <Stap nummer="4" titel="Vul uw KvK-nummer in" tekst="8 cijfers. U vindt dit op kvk.nl of op uw KvK-uittreksel." />
+          <Stap nummer="5" titel="Vul uw BTW-nummer in" tekst="Bijv. NL123456789B01. Staat op uw belastingbrief van de Belastingdienst." />
+          <Stap nummer="6" titel="Vul uw IBAN in" tekst="Uw zakelijke rekeningnummer, bijv. NL12 ABCD 0123 4567 89. Staat in het betalingsblok van de factuur." />
+          <Stap nummer="7" titel="Adres, e-mail en website (optioneel)" tekst="Worden ook op de factuur getoond. Vul in wat u wilt laten zien aan klanten." />
+          <Stap nummer="8" titel="Tik op 'Opslaan'" tekst="Klaar. Vanaf nu worden al deze gegevens automatisch op elke factuur en offerte gezet." />
+          <Tip tekst="Vergeet uw IBAN niet — zonder rekeningnummer weet uw klant niet waar hij naartoe moet betalen." />
         </Sectie>
 
-        <Sectie icoon="📄" titel="Facturen versturen">
-          <Alinea tekst="Tik op '+ Nieuw' om een factuur aan te maken. U kunt een bestaande klant selecteren of de gegevens gewoon handmatig invullen — wat voor u het makkelijkst werkt." />
-          <Alinea tekst="Voeg uw werkzaamheden toe als regelitems: wat heeft u gedaan, hoeveel uur of stuks, wat is de prijs en welk BTW-tarief geldt er. ZZPBox rekent het totaal automatisch uit." />
-          <Alinea tekst="Als de factuur klaar is, slaat u hem op als concept. Tik daarna op de deelknop om de PDF te versturen naar uw klant — via e-mail, WhatsApp, wat u maar wilt." />
-          <Alinea tekst="Zodra de klant betaald heeft, zet u de status op 'Betaald'. Zo houdt u altijd overzicht van wat er nog openstaat." />
-          <Tip tekst="Heeft u al facturen verstuurd vanuit een ander programma of Excel? Stel dan uw factuurnummer in via het ⚙️-icoon rechtsboven, zodat de nummering gewoon doorloopt. U hoeft niet opnieuw bij 1 te beginnen." />
+        {/* ─── FACTUREN ─── */}
+        <Sectie icoon="📄" titel="Facturen aanmaken en versturen">
+          <Waarschuwing tekst="Facturen aanmaken is een Premium-functie. Met Gratis kunt u facturen bekijken maar niet aanmaken of delen." />
+
+          <Subkop tekst="Een nieuwe factuur aanmaken" />
+          <Stap nummer="1" titel="Tik op 'Facturen' in het menu" tekst="Het factuuroverzicht opent. Hier ziet u alle concepten, openstaande en betaalde facturen." />
+          <Stap nummer="2" titel="Tik op '+ Nieuwe factuur'" tekst="Rechtsboven in het scherm." />
+          <Stap nummer="3" titel="Selecteer een klant of vul handmatig in" tekst="Heeft u de klant al opgeslagen? Tik op 'Selecteer klant' en kies uit de lijst. Zo niet, vul de naam direct in." />
+          <Stap nummer="4" titel="Tik op '+ Regel toevoegen'" tekst="Voor elke werkzaamheid of product voegt u een aparte regel toe." />
+          <Stap nummer="5" titel="Vul de regelgegevens in" tekst="Omschrijving (bijv. 'Websiteontwerp'), aantal (bijv. 1 of 4,5 voor uren), eenheid (bijv. 'stuks' of 'uur') en prijs per stuk." />
+          <Stap nummer="6" titel="Kies het BTW-tarief" tekst="0% (geen BTW), 9% (bijv. voedsel/boeken) of 21% (standaard). Twijfel? Gebruik 21%." />
+          <Stap nummer="7" titel="Herhaal voor meerdere regels" tekst="Tik opnieuw op '+ Regel toevoegen' voor elke extra post." />
+          <Stap nummer="8" titel="Controleer het totaal" tekst="ZZPBox berekent het subtotaal, BTW en eindtotaal automatisch onderaan." />
+          <Stap nummer="9" titel="Tik op 'Opslaan'" tekst="De factuur wordt opgeslagen. U kunt hem later nog bewerken zolang hij de status 'Concept' heeft." />
+
+          <Subkop tekst="Factuur versturen" />
+          <Stap nummer="10" titel="Open de factuur" tekst="Tik op de factuur in het overzicht." />
+          <Stap nummer="11" titel="Tik op de deelknop (rechtsboven)" tekst="ZZPBox genereert de PDF. Dit duurt een paar seconden." />
+          <Stap nummer="12" titel="Kies hoe u wilt delen" tekst="Via WhatsApp, e-mail, AirDrop — wat uw klant het liefst heeft. Het deelscherm van uw telefoon opent automatisch." />
+
+          <Subkop tekst="Betaling registreren" />
+          <Stap nummer="13" titel="Open de betaalde factuur" tekst="Tik op de factuur in het overzicht." />
+          <Stap nummer="14" titel="Tik op 'Status wijzigen' → 'Betaald'" tekst="De factuur verschuift naar 'Betaald' en uw openstaand saldo klopt weer." />
+
+          <Tip tekst="Heeft u al facturen verstuurd vanuit Excel of een ander programma? Stel dan uw startnummer in via het ⚙️-icoon rechtsboven — zo loopt de nummering gewoon door." />
         </Sectie>
 
-        <Sectie icoon="↩" titel="Fout gemaakt? Creditnota aanmaken">
-          <Alinea tekst="Het overkomt iedereen: een factuur die fout is of die u wilt annuleren. Open de betreffende factuur en tik op 'Creditnota aanmaken'. ZZPBox regelt de rest — de creditnota krijgt automatisch een eigen nummer en is gekoppeld aan de originele factuur." />
-          <Alinea tekst="Een creditnota is in feite een 'negatieve factuur' waarmee u een eerder bedrag corrigeert. Uw boekhouder zal het waarderen dat dit netjes bijgehouden wordt." />
+        {/* ─── CREDITNOTA ─── */}
+        <Sectie icoon="↩️" titel="Fout gemaakt? Creditnota aanmaken">
+          <Waarschuwing tekst="Creditnota's aanmaken is een Premium-functie." />
+          <Text style={s.intro}>Een creditnota is een negatieve factuur waarmee u een eerder bedrag volledig of gedeeltelijk corrigeert. Handig als u een factuur wilt annuleren of een fout wilt rechtzetten.</Text>
+          <Stap nummer="1" titel="Open de betreffende factuur" tekst="Tik op de factuur in het overzicht waarop de fout staat." />
+          <Stap nummer="2" titel="Tik op 'Creditnota aanmaken'" tekst="Onderaan het factuurdetailscherm." />
+          <Stap nummer="3" titel="Controleer de gegevens" tekst="ZZPBox vult alles automatisch in — hetzelfde bedrag, negatief. Het creditnotanummer wordt CN-[factuurnummer], bijv. CN-6359." />
+          <Stap nummer="4" titel="Tik op 'Opslaan'" tekst="De creditnota is aangemaakt en gekoppeld aan de originele factuur." />
+          <Stap nummer="5" titel="Stuur de creditnota naar uw klant" tekst="Tik op de deelknop en stuur de PDF, net als bij een gewone factuur." />
+          <Tip tekst="Uw boekhouder ziet graag dat creditnota's netjes bijgehouden worden. ZZPBox doet dit automatisch — u hoeft niks handmatig te corrigeren." />
         </Sectie>
 
-        <Sectie icoon="📋" titel="Offertes maken en omzetten">
-          <Alinea tekst="Wil een klant eerst een prijsopgave? Maak een offerte aan via het Offertes-scherm. De opbouw is hetzelfde als een factuur: klantgegevens, werkzaamheden, prijs en BTW." />
-          <Alinea tekst="Stuur de offerte als PDF naar uw klant. Gaat hij akkoord? Tik op 'Omzetten naar factuur' — ZZPBox maakt er direct een factuur van, inclusief alle gegevens. U hoeft niets opnieuw in te typen." />
-          <Tip tekst="Net als bij facturen kunt u ook het startnummer van offertes zelf instellen via het ⚙️-icoon. Handig als u al eerder offertes heeft verstuurd." />
+        {/* ─── OFFERTES ─── */}
+        <Sectie icoon="📋" titel="Offertes maken en omzetten naar factuur">
+          <Waarschuwing tekst="Offertes aanmaken en omzetten naar factuur is een Premium-functie." />
+
+          <Subkop tekst="Een offerte aanmaken" />
+          <Stap nummer="1" titel="Tik op 'Offertes' in het menu" tekst="Het offerteoverzicht opent." />
+          <Stap nummer="2" titel="Tik op '+ Nieuwe offerte'" tekst="Rechtsboven." />
+          <Stap nummer="3" titel="Selecteer klant of vul handmatig in" tekst="Net als bij een factuur." />
+          <Stap nummer="4" titel="Voeg regels toe" tekst="Zelfde werking als bij een factuur: omschrijving, aantal, prijs, BTW-tarief." />
+          <Stap nummer="5" titel="Tik op 'Opslaan'" tekst="Offerte is klaar als concept." />
+          <Stap nummer="6" titel="Stuur de offerte naar uw klant" tekst="Tik op de deelknop → PDF wordt gegenereerd → deel via WhatsApp, e-mail, etc." />
+
+          <Subkop tekst="Offerte omzetten naar factuur" />
+          <Stap nummer="7" titel="Klant gaat akkoord" tekst="Open de betreffende offerte in het overzicht." />
+          <Stap nummer="8" titel="Tik op 'Omzetten naar factuur'" tekst="Onderaan het detailscherm." />
+          <Stap nummer="9" titel="Controleer en sla op" tekst="ZZPBox maakt automatisch een factuur met alle gegevens van de offerte. U hoeft niets opnieuw in te typen." />
+          <Tip tekst="Net als bij facturen kunt u het startnummer van offertes instellen via het ⚙️-icoon. Handig als u al eerder offertes heeft verstuurd." />
         </Sectie>
 
-        <Sectie icoon="⏱️" titel="Uren bijhouden">
-          <Alinea tekst="ZZPBox heeft een ingebouwde timer. Begint u aan een klus? Tik op 'Start timer'. Klaar? Tik op 'Stop'. De uren worden automatisch bijgehouden. U kunt ook achteraf uren handmatig invoeren als u de timer vergeten bent." />
-          <Alinea tekst="Koppel uren aan een klant, zodat u altijd weet hoeveel tijd u per klant heeft besteed." />
-          <Alinea tekst="Als u een project heeft afgerond, selecteert u de klant in de filterbalk bovenaan en tikt u op 'Factuur aanmaken'. Voer uw uurtarief in — en ZZPBox maakt de factuur voor u aan." />
-          <Tip tekst="Voeg een korte omschrijving toe aan uw urenregistratie. Over een maand weet u anders niet meer waar die zes uur op donderdag voor waren." />
+        {/* ─── UREN ─── */}
+        <Sectie icoon="⏱️" titel="Uren bijhouden en factureren">
+          <Waarschuwing tekst="Urenregistratie en uren factureren is een Premium-functie." />
+
+          <Subkop tekst="Uren bijhouden met de timer" />
+          <Stap nummer="1" titel="Tik op 'Uren' in het menu" tekst="Het urenoverzicht opent." />
+          <Stap nummer="2" titel="Tik op 'Start timer'" tekst="De timer begint te lopen. U kunt de app gewoon afsluiten — de timer loopt door." />
+          <Stap nummer="3" titel="Tik op 'Stop' als u klaar bent" tekst="De uren worden automatisch berekend en opgeslagen." />
+          <Stap nummer="4" titel="Koppel aan een klant (optioneel)" tekst="Voeg een omschrijving en klantnaam toe zodat u later weet voor wie het was." />
+
+          <Subkop tekst="Uren handmatig invoeren" />
+          <Stap nummer="5" titel="Tik op 'Handmatig invoeren'" tekst="Rechts bovenaan het scherm." />
+          <Stap nummer="6" titel="Vul starttijd en eindtijd in" tekst="Bijv. 09:00 – 12:30. ZZPBox berekent de duur automatisch." />
+          <Stap nummer="7" titel="Voeg omschrijving en klant toe" tekst="Optioneel maar handig voor later." />
+          <Stap nummer="8" titel="Tik op 'Opslaan'" tekst="De uren staan in het overzicht." />
+
+          <Subkop tekst="Uren omzetten naar factuur" />
+          <Stap nummer="9" titel="Filter op klant" tekst="Tik op de filterbalk bovenaan en selecteer de klant voor wie u wilt factureren." />
+          <Stap nummer="10" titel="Tik op 'Factuur aanmaken'" tekst="Rechtsboven. Alle uren van die klant worden samengevoegd." />
+          <Stap nummer="11" titel="Voer uw uurtarief in" tekst="Bijv. 85,00. ZZPBox berekent het totaal automatisch." />
+          <Stap nummer="12" titel="Tik op 'Aanmaken'" tekst="De factuur is klaar. U vindt hem terug onder Facturen." />
+          <Tip tekst="Voeg altijd een korte omschrijving toe bij uw uren. Over een maand weet u anders niet meer waar die vier uur op dinsdagochtend voor waren." />
         </Sectie>
 
-        <Sectie icoon="💰" titel="Inkomsten en uitgaven bijhouden">
-          <Alinea tekst="Hier registreert u alle zakelijke inkomsten en uitgaven die niet via een factuur lopen. Denk aan een abonnement dat u betaalt, materiaalkosten, een zakelijke lunch of een ontvangen betaling die u handmatig wilt noteren." />
-          <Alinea tekst="Vul altijd het BTW-tarief in — dit heeft u nodig voor uw BTW-aangifte. ZZPBox houdt het automatisch bij." />
-          <Alinea tekst="Via de exportknop rechtsboven kunt u een overzicht als PDF exporteren voor een bepaalde periode. Handig om naar uw boekhouder te sturen." />
+        {/* ─── INKOMSTEN ─── */}
+        <Sectie icoon="💰" titel="Inkomsten en uitgaven registreren">
+          <Text style={s.intro}>Hier registreert u alles wat niet via een factuur loopt — denk aan een software-abonnement, materiaalkosten, een zakelijke lunch of een directe betaling van een klant.</Text>
+
+          <Subkop tekst="Een inkomst of uitgave invoeren" />
+          <Stap nummer="1" titel="Tik op 'Inkomsten' in het menu" tekst="Het overzicht van al uw inkomsten en uitgaven opent." />
+          <Stap nummer="2" titel="Tik op '+ Inkomst' of '+ Uitgave'" tekst="Kies het type dat van toepassing is. Bij twijfel: geld dat binnenkomt = inkomst, geld dat uitgaat = uitgave." />
+          <Stap nummer="3" titel="Vul een omschrijving in" tekst="Bijv. 'Materiaalkosten project X' of 'Abonnement Adobe'." />
+          <Stap nummer="4" titel="Vul het bedrag in" tekst="Altijd het bedrag excl. BTW invullen, bijv. 99,50." />
+          <Stap nummer="5" titel="Kies een categorie" tekst="Bijv. 'Kantoorkosten', 'Reiskosten', 'Omzet'. Categorieën helpen bij uw rapportage." />
+          <Stap nummer="6" titel="Kies het BTW-tarief" tekst="0%, 9% of 21%. Dit heeft u nodig voor uw BTW-aangifte. Vul het altijd in." />
+          <Stap nummer="7" titel="Controleer de datum" tekst="Standaard is dit vandaag. Tik erop als u een andere datum wilt invoeren." />
+          <Stap nummer="8" titel="Tik op 'Opslaan'" tekst="De transactie staat in het overzicht en telt mee in uw rapportage." />
+          <Tip tekst="Met Gratis kunt u max. 3 transacties per dag en 20 per maand invoeren. Wilt u onbeperkt invoeren? Upgrade naar Premium." />
         </Sectie>
 
-        <Sectie icoon="📊" titel="Rapportage en BTW">
-          <Alinea tekst="In het Rapportage-scherm ziet u in één oogopslag hoe uw bedrijf ervoor staat: hoeveel u heeft verdiend, hoeveel u heeft uitgegeven en wat het nettoresultaat is." />
-          <Alinea tekst="Het BTW-overzicht is extra handig: ZZPBox berekent automatisch hoeveel BTW u over de gekozen periode moet afdragen aan de Belastingdienst, opgesplitst in 21% en 9%." />
-          <Alinea tekst="U kunt filteren op maand, kwartaal of jaar. Tik op een categorie om te zien welke transacties daaronder vallen." />
-          <Tip tekst="Controleer de rapportage elke maand even — zo heeft u geen verrassingen bij uw kwartaalaangifte en weet u altijd hoeveel BTW u opzij moet zetten." />
+        {/* ─── RAPPORTAGE ─── */}
+        <Sectie icoon="📊" titel="Rapportage en BTW-overzicht">
+          <Text style={s.intro}>Het Rapportage-scherm laat zien hoe uw bedrijf ervoor staat. Handig voor uw kwartaalaangifte bij de Belastingdienst.</Text>
+          <Stap nummer="1" titel="Tik op 'Rapportage' in het menu" tekst="Het overzichtsscherm opent met inkomsten, uitgaven en resultaat." />
+          <Stap nummer="2" titel="Kies uw periode" tekst="Bovenaan kunt u schakelen tussen maand, kwartaal en jaar. Tik op de pijltjes om naar een andere periode te bladeren." />
+          <Stap nummer="3" titel="Bekijk uw omzet en kosten" tekst="Totale inkomsten minus uitgaven = uw nettoresultaat over de gekozen periode." />
+          <Stap nummer="4" titel="Scroll naar het BTW-overzicht" tekst="ZZPBox berekent hoeveel BTW u moet afdragen: opgesplitst in 21% en 9%. Dit bedrag vult u in bij uw BTW-aangifte." />
+          <Stap nummer="5" titel="Tik op een categorie voor details" tekst="U ziet welke transacties daaronder vallen." />
+          <Stap nummer="6" titel="Exporteer als PDF" tekst="Tik op de exportknop rechtsboven om het rapport te delen met uw boekhouder." />
+          <Tip tekst="Controleer de rapportage elke maand even. Zo heeft u geen verrassingen bij uw kwartaalaangifte en weet u precies hoeveel BTW u opzij moet zetten." />
         </Sectie>
 
-        <Sectie icoon="👥" titel="Klanten opslaan">
-          <Alinea tekst="U kunt klanten opslaan via het klantenscherm in facturen of offertes. De volgende keer dat u een factuur maakt, selecteert u gewoon de klant en worden alle gegevens automatisch ingevuld." />
-          <Alinea tekst="Dit bespaart u veel tikwerk, zeker als u regelmatig voor dezelfde klanten werkt." />
+        {/* ─── KLANTEN ─── */}
+        <Sectie icoon="👥" titel="Klanten opslaan en beheren">
+          <Text style={s.intro}>Door klanten op te slaan, hoeft u hun gegevens maar één keer in te voeren. Bij de volgende factuur of offerte kiest u ze gewoon uit de lijst.</Text>
+          <Stap nummer="1" titel="Open een nieuwe factuur of offerte" tekst="Tik op '+ Nieuwe factuur' of '+ Nieuwe offerte'." />
+          <Stap nummer="2" titel="Tik op 'Selecteer klant'" tekst="Bovenaan het formulier." />
+          <Stap nummer="3" titel="Tik op '+ Nieuwe klant toevoegen'" tekst="Als de klant er nog niet tussen staat." />
+          <Stap nummer="4" titel="Vul de klantgegevens in" tekst="Naam, adres, e-mailadres. Bedrijfsnaam en KvK/BTW-nummer zijn optioneel." />
+          <Stap nummer="5" titel="Tik op 'Opslaan'" tekst="De klant is opgeslagen. Volgende keer staat hij direct in de lijst." />
+          <Tip tekst="Met Gratis kunt u max. 3 klanten opslaan. Met Premium is dit onbeperkt." />
         </Sectie>
 
+        {/* ─── PRODUCTEN ─── */}
+        <Sectie icoon="📦" titel="Producten en diensten opslaan">
+          <Text style={s.intro}>Verkoopt u steeds dezelfde diensten of producten? Sla ze op, dan hoeft u de omschrijving, prijs en BTW-tarief niet elke keer opnieuw in te typen.</Text>
+          <Stap nummer="1" titel="Open een nieuwe factuur" tekst="Tik op '+ Nieuw factuur'." />
+          <Stap nummer="2" titel="Voeg een regel toe" tekst="Tik op '+ Regel toevoegen'." />
+          <Stap nummer="3" titel="Tik op het bladericoon (rechtsboven in de regelinvoer)" tekst="Een lijst van opgeslagen producten/diensten opent." />
+          <Stap nummer="4" titel="Selecteer een product of tik op '+'" tekst="Om een nieuw product op te slaan: vul de gegevens in en sla op. Voortaan staat het in uw lijst." />
+          <Tip tekst="Met Gratis kunt u max. 5 producten opslaan. Met Premium onbeperkt." />
+        </Sectie>
+
+        {/* ─── GRATIS VS PREMIUM ─── */}
         <Sectie icoon="🆓" titel="Gratis of Premium — wat is het verschil?">
-          <Alinea tekst="ZZPBox is gratis te gebruiken. Met een Premium-abonnement heeft u toegang tot alle functies zonder beperkingen." />
+          <Text style={s.intro}>ZZPBox is gratis te gebruiken. Met Premium heeft u toegang tot alle functies zonder beperkingen.</Text>
           <Vergelijking
             links={[
               'Max. 3 transacties per dag',
               'Max. 20 transacties per maand',
-              'Facturen en offertes bekijken',
+              'Max. 3 klanten opslaan',
+              'Max. 5 producten opslaan',
               'Rapportage bekijken',
-              'Urenregistratie (niet factureren)',
+              'Facturen/offertes bekijken',
             ]}
             rechts={[
               'Onbeperkt transacties',
-              'Facturen aanmaken en delen',
-              'Offertes aanmaken en delen',
-              'PDF exporteren en delen',
+              'Onbeperkt klanten',
+              'Onbeperkt producten',
+              'Facturen aanmaken & delen',
+              'Offertes aanmaken & delen',
               "Creditnota's aanmaken",
-              'Uren factureren',
+              'Uren bijhouden & factureren',
+              'PDF exporteren & delen',
+              'Geen advertenties',
             ]}
           />
-          <Tip tekst="Wilt u upgraden? Tik op 'Abonnement' in het menu. U kunt kiezen uit maandelijks, per kwartaal of per jaar." />
+          <Stap nummer="1" titel="Tik op 'Abonnement' in het menu" tekst="Rechtsonder in het tabblad." />
+          <Stap nummer="2" titel="Kies uw abonnement" tekst="Maandelijks (€7,99), per kwartaal (€19,99 — 17% korting) of jaarlijks (€69,99 — 27% korting)." />
+          <Stap nummer="3" titel="Tik op 'Nu upgraden naar Premium'" tekst="Betaling verloopt via App Store. U kunt op elk moment opzeggen via uw iPhone-instellingen." />
+          <Tip tekst="Al eerder betaald maar werkt het niet? Tik op 'Aankopen herstellen' op het abonnementenscherm. Uw aankoop wordt hersteld zonder opnieuw te betalen." />
         </Sectie>
 
         <View style={s.footer}>
           <Text style={s.footerTekst}>Nog vragen?</Text>
-          <Text style={s.footerOndertekst}>Laat een bericht achter via de App Store-pagina van ZZPBox. Wij helpen u graag verder.</Text>
+          <Text style={s.footerOndertekst}>Stuur een bericht naar support@zzpbox.nl of laat een review achter in de App Store. Wij helpen u graag verder.</Text>
         </View>
 
       </ScrollView>
@@ -178,7 +291,8 @@ const s = StyleSheet.create({
   sectieIcoon: { fontSize: 22 },
   sectieTitel: { color: '#ffffff', fontSize: 17, fontWeight: '800' },
   sectieInhoud: { backgroundColor: '#222', borderRadius: 14, padding: 16, gap: 12 },
-  alinea: { color: '#ccc', fontSize: 14, lineHeight: 22 },
+  intro: { color: '#aaa', fontSize: 13, lineHeight: 20, fontStyle: 'italic' },
+  subkop: { color: '#C9A84C', fontSize: 13, fontWeight: '800', letterSpacing: 0.5, marginTop: 4 },
   stap: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   stapNummer: { backgroundColor: '#FF6B00', borderRadius: 12, width: 26, height: 26, alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 },
   stapNummerTekst: { color: '#1A1A1A', fontSize: 12, fontWeight: '800' },
@@ -187,6 +301,9 @@ const s = StyleSheet.create({
   tip: { flexDirection: 'row', gap: 10, backgroundColor: '#1e1a0e', borderRadius: 10, padding: 14, alignItems: 'flex-start', borderWidth: 1, borderColor: '#C9A84C22' },
   tipIcoon: { fontSize: 16, marginTop: 1 },
   tipTekst: { color: '#C9A84C', fontSize: 13, lineHeight: 20, flex: 1 },
+  waarschuwing: { flexDirection: 'row', gap: 10, backgroundColor: '#2a1a0e', borderRadius: 10, padding: 14, alignItems: 'flex-start', borderWidth: 1, borderColor: '#FF6B0044' },
+  waarschuwingIcoon: { fontSize: 16, marginTop: 1 },
+  waarschuwingTekst: { color: '#FF6B00', fontSize: 13, lineHeight: 20, flex: 1, fontWeight: '600' },
   vergelijking: { flexDirection: 'row', gap: 12 },
   vergelijkingKolom: { flex: 1, gap: 6 },
   vergelijkingLabel: { color: '#666', fontSize: 11, fontWeight: '800', letterSpacing: 1, marginBottom: 4 },
