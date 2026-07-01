@@ -64,6 +64,15 @@ function formatDatumLang(d: string): string {
   }
 }
 
+function datumKort(d: string): string {
+  try {
+    const date = new Date(d + 'T12:00:00');
+    return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch {
+    return d;
+  }
+}
+
 export default function UrenScherm() {
   const router = useRouter();
   const pakket = gebruikPakket();
@@ -98,7 +107,6 @@ export default function UrenScherm() {
   const [filterKlantId, setFilterKlantId] = useState<string | null>(null);
 
   // Factuur form
-  const [factuurOmschrijving, setFactuurOmschrijving] = useState('');
   const [factuurUurtarief, setFactuurUurtarief] = useState('');
   const [factuurBtw, setFactuurBtw] = useState('21%');
 
@@ -298,8 +306,6 @@ export default function UrenScherm() {
       Alert.alert('Geen uren', 'Er zijn geen ongefactureerde uren voor deze klant.');
       return;
     }
-    const maand = new Date().toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
-    setFactuurOmschrijving(`Gewerkte uren — ${maand}`);
     setFactuurUurtarief('');
     setFactuurBtw('21%');
     setFactuurModal(true);
@@ -310,18 +316,28 @@ export default function UrenScherm() {
     const tarief = parseFloat(factuurUurtarief.replace(',', '.'));
     if (!tarief || tarief <= 0) { Alert.alert('Fout', 'Vul een geldig uurtarief in.'); return; }
 
-    const aantalUren = parseFloat((totaalOngefactureerdMin / 60).toFixed(2));
     const klant = klanten.find(k => k.id === filterKlantId);
     if (!gebruiker) return;
     const nummer = await nieuwFactuurNummer(gebruiker.uid, false);
     const nu = new Date();
     const vervaldatum = new Date(nu.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    const subtotaal = aantalUren * tarief;
+    // Één regel per tijdregistratie — gesorteerd op datum (oud → nieuw)
+    const regels = [...ongefactureerd]
+      .sort((a: any, b: any) => (a.datum || '').localeCompare(b.datum || ''))
+      .map((u: any, i: number) => ({
+        id: String(i + 1),
+        omschrijving: `${u.omschrijving || 'Werkzaamheden'} — ${datumKort(u.datum)}`,
+        aantal: (u.duurMinuten / 60).toFixed(2),
+        prijs: tarief.toFixed(2),
+        btw: factuurBtw,
+        eenheid: 'uur',
+      }));
+
+    const subtotaal = regels.reduce((s, r) => s + parseFloat(r.aantal) * parseFloat(r.prijs), 0);
     let btwBedrag = 0;
     if (factuurBtw === '21%') btwBedrag = subtotaal * 0.21;
     else if (factuurBtw === '9%') btwBedrag = subtotaal * 0.09;
-    const totaal = subtotaal + btwBedrag;
 
     await factuurToevoegen({
       factuurNummer: nummer,
@@ -333,14 +349,7 @@ export default function UrenScherm() {
       klantKvk: klant?.kvkNummer || '',
       klantBtw: klant?.btwNummer || '',
       klantEmail: klant?.email || '',
-      regels: [{
-        id: '1',
-        omschrijving: factuurOmschrijving,
-        aantal: aantalUren.toString(),
-        prijs: tarief.toFixed(2),
-        btw: factuurBtw,
-        eenheid: 'uur',
-      }],
+      regels,
       notities: '',
       status: 'concept',
     });
@@ -348,7 +357,7 @@ export default function UrenScherm() {
     await transactieToevoegen({
       soort: 'inkomst',
       omschrijving: `${nummer} — ${klantNaamVan(klant) || 'Klant'}`,
-      bedrag: totaal.toFixed(2),
+      bedrag: subtotaal.toFixed(2),
       btwBedrag: btwBedrag.toFixed(2),
       datum: nu.toISOString().split('T')[0],
       categorie: 'Omzet diensten',
@@ -840,14 +849,6 @@ export default function UrenScherm() {
                 = {(totaalOngefactureerdMin / 60).toFixed(2).replace('.', ',')} uur
               </Text>
             </View>
-
-            <Text style={s.veldLabel}>OMSCHRIJVING OP FACTUUR</Text>
-            <TextInput
-              style={s.veld}
-              value={factuurOmschrijving}
-              onChangeText={setFactuurOmschrijving}
-              placeholderTextColor="#444"
-            />
 
             <Text style={s.veldLabel}>UURTARIEF (€)</Text>
             <TextInput
